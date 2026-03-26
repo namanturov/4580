@@ -16,6 +16,9 @@ spring:
     properties:
       hibernate:
         format_sql: true
+    open-in-view: true
   h2:
     console:
       enabled: true
+idempotency:
+  ttl: 24h

@@ -13,12 +13,13 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Table(name = "payments")
 @Entity
 @Getter
 @Setter
 @Accessors(chain = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class PaymentEntity {
+public class Payment {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     UUID id;
@@ -26,7 +27,7 @@ public class PaymentEntity {
     PaymentStatus status;
     PaymentStatus prevStatus;
     @Embedded
-    MoneyEntity money;
+    Money money;
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
     LocalDateTime createdAt;

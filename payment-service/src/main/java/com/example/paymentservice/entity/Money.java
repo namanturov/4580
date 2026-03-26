@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 @EqualsAndHashCode
 @Accessors(chain = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class MoneyEntity {
+public class Money {
     BigDecimal amount;
     CurrencyType currency;
 }

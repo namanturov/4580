@@ -1,11 +1,11 @@
 package com.example.paymentservice.controller;
 
 import com.example.paymentservice.controller.docs.PaymentControllerDoc;
-import com.example.paymentservice.dto.business.Payment;
 import com.example.paymentservice.dto.request.CreatePaymentRequest;
 import com.example.paymentservice.dto.request.UpdatePaymentRequest;
 import com.example.paymentservice.dto.response.PaymentListResponse;
 import com.example.paymentservice.dto.response.PaymentResponse;
+import com.example.paymentservice.entity.Payment;
 import com.example.paymentservice.service.PaymentService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

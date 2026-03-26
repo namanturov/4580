@@ -2,6 +2,7 @@ package com.example.orderservice.controller;
 
 import com.example.orderservice.controller.docs.OrderControllerDoc;
 import com.example.orderservice.dto.business.Order;
+import com.example.orderservice.dto.business.PaymentHttpHeader;
 import com.example.orderservice.dto.request.CreateOrderRequest;
 import com.example.orderservice.dto.request.UpdateOrderRequest;
 import com.example.orderservice.dto.response.OrderListResponse;
@@ -58,13 +59,15 @@ public class OrderController implements OrderControllerDoc {
     @Override
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void update(@PathVariable
+    public void update(@RequestHeader(PaymentHttpHeader.IDEMPOTENCY)
+                       UUID idempotencyKey,
+                       @PathVariable
                        UUID id,
                        @RequestBody
                        UpdateOrderRequest request) {
         var order = modelMapper.map(request, Order.class);
 
-        orderService.update(id, order);
+        orderService.update(id, order, idempotencyKey);
     }
 
     @Override
