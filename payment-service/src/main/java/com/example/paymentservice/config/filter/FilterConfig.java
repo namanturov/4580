@@ -1,6 +1,6 @@
 package com.example.paymentservice.config.filter;
 
-import com.example.paymentservice.filter.FilterChainExceptionHandler;
+import com.example.paymentservice.filter.exceptionhandler.ExceptionHandlerFilter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,8 +10,8 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 public class FilterConfig {
 
     @Bean
-    public FilterChainExceptionHandler filterChainExceptionHandler(@Qualifier("handlerExceptionResolver")
+    public ExceptionHandlerFilter filterChainExceptionHandler(@Qualifier("handlerExceptionResolver")
                                                                    HandlerExceptionResolver handlerExceptionResolver) {
-        return new FilterChainExceptionHandler(handlerExceptionResolver);
+        return new ExceptionHandlerFilter(handlerExceptionResolver);
     }
 }

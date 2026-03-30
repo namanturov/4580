@@ -1,9 +1,7 @@
 package com.example.paymentservice.exception.handler;
 
-import com.example.orderservice.dto.response.Response;
-import com.example.paymentservice.exception.EntityNotFoundException;
-import com.example.paymentservice.exception.IdempotencyProcessingException;
-import com.example.paymentservice.exception.RequestDataValidationException;
+import com.example.paymentservice.dto.response.Response;
+import com.example.paymentservice.exception.*;
 import jakarta.validation.ConstraintViolationException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -61,5 +59,19 @@ public class PaymentAppExceptionHandler {
         var errorMessage = "уже смотрю";
         log.error(ex.getMessage(), ex);
         return Response.of(errorMessage);
+    }
+
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<Response> handleServiceUnavailableException(ServiceUnavailableException e) {
+        return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(Response.of(e.getMessage()));
+    }
+
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<Response> handleRateLimitExceededException(RateLimitExceededException e) {
+        return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(Response.of(e.getMessage()));
     }
 }
