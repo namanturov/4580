@@ -1,4 +1,4 @@
-package com.example.paymentservice.filter;
+package com.example.paymentservice.filter.exceptionhandler;
 
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.FilterChain;
@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
@@ -17,7 +16,7 @@ import org.springframework.web.servlet.HandlerExceptionResolver;
 @Order(1)
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class FilterChainExceptionHandler extends OncePerRequestFilter {
+public class ExceptionHandlerFilter extends OncePerRequestFilter {
 
     HandlerExceptionResolver resolver;
 

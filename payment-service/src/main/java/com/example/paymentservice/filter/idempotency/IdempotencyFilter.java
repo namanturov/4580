@@ -1,4 +1,4 @@
-package com.example.paymentservice.filter;
+package com.example.paymentservice.filter.idempotency;
 
 import com.example.paymentservice.enums.IdempotencyStatus;
 import com.example.paymentservice.exception.RequestDataValidationException;
@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.UUID;
 
 @Slf4j
-@Order(2)
+@Order(3)
 @Component
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -64,7 +64,7 @@ public class IdempotencyFilter extends OncePerRequestFilter {
 
         if (IdempotencyStatus.DONE.equals(idempotencyStore.getStatus())) {
             response.setStatus(idempotencyStore.getResponseStatus());
-            response.setCharacterEncoding(StandardCharsets.UTF_8);
+            response.setCharacterEncoding(StandardCharsets.UTF_8.name());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 
             response.getWriter().write(idempotencyStore.getResponseBody());

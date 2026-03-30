@@ -1,4 +1,4 @@
-package com.example.paymentservice.filter;
+package com.example.paymentservice.filter.idempotency;
 
 import jakarta.servlet.ReadListener;
 import jakarta.servlet.ServletInputStream;
