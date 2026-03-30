@@ -53,7 +53,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void update(UUID id, Order order) {
+    public void update(UUID id, Order order, UUID idempotencyKey) {
         var orderEntity = orderManager.getById(id);
         var status = order.getStatus();
         orderEntity.setPrevStatus(orderEntity.getStatus())
@@ -63,7 +63,7 @@ public class OrderServiceImpl implements OrderService {
                 || (status == OrderStatus.FAILED && orderEntity.getPrevStatus() == OrderStatus.SUCCESS)) {
             BigDecimal fixedOrderPrice = BigDecimal.valueOf(4580.02);
             var createPaymentReq = CreatePaymentRequest.of(id, fixedOrderPrice, CurrencyType.KGS);
-            paymentClient.create(createPaymentReq);
+            paymentClient.create(idempotencyKey, createPaymentReq);
         }
     }
 

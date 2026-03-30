@@ -12,7 +12,7 @@ public interface OrderService {
 
     Order getById(UUID id);
 
-    void update(UUID id, Order order);
+    void update(UUID id, Order order, UUID idempotencyKey);
 
     void delete(UUID id);
 }

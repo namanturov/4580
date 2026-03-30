@@ -1,8 +1,7 @@
 package com.example.paymentservice.service.impl;
 
-import com.example.paymentservice.dto.business.Payment;
-import com.example.paymentservice.entity.MoneyEntity;
-import com.example.paymentservice.entity.PaymentEntity;
+import com.example.paymentservice.entity.Money;
+import com.example.paymentservice.entity.Payment;
 import com.example.paymentservice.enums.PaymentStatus;
 import com.example.paymentservice.repository.manager.PaymentManager;
 import com.example.paymentservice.service.PaymentService;
@@ -28,7 +27,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public void create(Payment payment) {
         payment.setStatus(PaymentStatus.CREATED);
-        var paymentEntity = modelMapper.map(payment, PaymentEntity.class);
+        var paymentEntity = modelMapper.map(payment, Payment.class);
 
         paymentManager.save(paymentEntity);
     }
@@ -38,7 +37,7 @@ public class PaymentServiceImpl implements PaymentService {
         var paymentEntityList = paymentManager.getAll();
 
         return paymentEntityList.stream()
-                .map(paymentEntity -> modelMapper.map(paymentEntity, Payment.class))
+                .map(payment -> modelMapper.map(payment, Payment.class))
                 .toList();
     }
 
@@ -53,7 +52,7 @@ public class PaymentServiceImpl implements PaymentService {
     public void update(UUID id, Payment payment) {
         var paymentEntity = paymentManager.getById(id);
         paymentEntity.setStatus(payment.getStatus());
-        var newMoney = new MoneyEntity()
+        var newMoney = new Money()
                 .setAmount(payment.getMoney().getAmount())
                 .setCurrency(payment.getMoney().getCurrency());
         if (!newMoney.equals(paymentEntity.getMoney())) {

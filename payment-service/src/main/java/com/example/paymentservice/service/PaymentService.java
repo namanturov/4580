@@ -1,6 +1,6 @@
 package com.example.paymentservice.service;
 
-import com.example.paymentservice.dto.business.Payment;
+import com.example.paymentservice.entity.Payment;
 
 import java.util.List;
 import java.util.UUID;
