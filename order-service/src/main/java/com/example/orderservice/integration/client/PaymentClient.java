@@ -15,6 +15,7 @@ import io.github.resilience4j.ratelimiter.RequestNotPermitted;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -32,10 +33,10 @@ public interface PaymentClient {
     @RateLimiter(name = "paymentClient", fallbackMethod = "createFallbackOnRateLimiter")
     @Bulkhead(name = "paymentClient", fallbackMethod = "createFallbackOnBulkhead")
     @Retry(name = "paymentClient", fallbackMethod = "createFallbackOnRetry")
-    void create(@RequestHeader(PaymentHttpHeader.IDEMPOTENCY)
-                UUID idempotencyKey,
-                @RequestBody
-                CreatePaymentRequest request);
+    ResponseEntity<Void> create(@RequestHeader(PaymentHttpHeader.IDEMPOTENCY)
+                                UUID idempotencyKey,
+                                @RequestBody
+                                CreatePaymentRequest request);
 
     //ну по идеи можно было на некоторые redirect на чет другие сервисы. Аля с кеша или тип того, но было лень думать,
     //потому чисто exceptions выкидываю. Ну а так дааа я пон что можно туда сюда делать.

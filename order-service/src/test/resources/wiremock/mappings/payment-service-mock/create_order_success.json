@@ -1,0 +1,13 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/payments"
+  },
+  "response" : {
+    "status": 201,
+    "headers": {
+      "Content-Type": "application/json"
+    },
+    "bodyFileName": "payment-service-mock/create_order_success_response.json"
+  }
+}
