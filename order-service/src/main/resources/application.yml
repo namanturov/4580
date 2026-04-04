@@ -51,7 +51,7 @@ resilience4j:
         slow-call-rate-threshold: 50
         slow-call-duration-threshold: 5s
         permitted-number-of-calls-in-half-open-state: 2
-        minimum-number-of-calls: 3
+        minimum-number-of-calls: 10
         wait-duration-in-open-state: 10s
         ignore-exceptions:
           - com.example.orderservice.exception.RateLimitExceededException
