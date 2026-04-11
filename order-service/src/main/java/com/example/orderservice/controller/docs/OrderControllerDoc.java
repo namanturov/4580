@@ -1,6 +1,6 @@
 package com.example.orderservice.controller.docs;
 
-import com.example.orderservice.dto.business.PaymentHttpHeader;
+import com.example.orderservice.api.header.PaymentHttpHeader;
 import com.example.orderservice.dto.request.CreateOrderRequest;
 import com.example.orderservice.dto.request.UpdateOrderRequest;
 import com.example.orderservice.dto.response.OrderListResponse;

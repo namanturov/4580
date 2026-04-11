@@ -33,12 +33,14 @@ public class PaymentController implements PaymentControllerDoc {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @CircuitBreaker(name = "paymentController", fallbackMethod = "createFallbackOnCB")
-    public void create(@RequestBody
-                       CreatePaymentRequest request) {
-        //тут оказ тестировал и забыл вернуть корректный код...можете не обращать внимание на это
-        var payment = modelMapper.map(request, Payment.class);
-
-        paymentService.create(payment);
+    public PaymentResponse create(@RequestBody
+                                  CreatePaymentRequest request) {
+        var money = request.getMoney();
+        var savedPayment = paymentService.createPayment(
+                request.getOrderId(),
+                money.getAmount(),
+                money.getCurrency());
+        return modelMapper.map(savedPayment, PaymentResponse.class);
     }
 
     private void createFallbackOnCB(CreatePaymentRequest request, CallNotPermittedException ignored) {
@@ -49,7 +51,7 @@ public class PaymentController implements PaymentControllerDoc {
     @GetMapping
     @CircuitBreaker(name = "paymentController", fallbackMethod = "getAllFallbackOnCB")
     public PaymentListResponse getAll() {
-        var paymentList = paymentService.getAll();
+        var paymentList = paymentService.getAllPayments();
         var paymentResponseList = paymentList.stream()
                 .map(payment -> modelMapper.map(payment, PaymentResponse.class))
                 .toList();
@@ -66,7 +68,7 @@ public class PaymentController implements PaymentControllerDoc {
     @CircuitBreaker(name = "paymentController", fallbackMethod = "getByIdFallbackOnCB")
     public PaymentResponse getById(@PathVariable
                                    UUID id) {
-        var payment = paymentService.getById(id);
+        var payment = paymentService.getPaymentById(id);
         return modelMapper.map(payment, PaymentResponse.class);
     }
 
@@ -84,7 +86,7 @@ public class PaymentController implements PaymentControllerDoc {
                        UpdatePaymentRequest request) {
 
         var payment = modelMapper.map(request, Payment.class);
-        paymentService.update(id, payment);
+        paymentService.updatePayment(id, payment);
     }
 
     private void updateFallbackOnCB(UUID id, UpdatePaymentRequest request, CallNotPermittedException ignored) {
@@ -97,7 +99,7 @@ public class PaymentController implements PaymentControllerDoc {
     @CircuitBreaker(name = "paymentController", fallbackMethod = "deleteFallbackOnCB")
     public void delete(@PathVariable
                        UUID id) {
-        paymentService.delete(id);
+        paymentService.deletePayment(id);
     }
 
     private void deleteFallbackOnCB(UUID id, CallNotPermittedException ignored) {

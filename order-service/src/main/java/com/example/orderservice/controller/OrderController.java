@@ -1,12 +1,12 @@
 package com.example.orderservice.controller;
 
+import com.example.orderservice.api.header.PaymentHttpHeader;
 import com.example.orderservice.controller.docs.OrderControllerDoc;
-import com.example.orderservice.dto.business.Order;
-import com.example.orderservice.dto.business.PaymentHttpHeader;
 import com.example.orderservice.dto.request.CreateOrderRequest;
 import com.example.orderservice.dto.request.UpdateOrderRequest;
 import com.example.orderservice.dto.response.OrderListResponse;
 import com.example.orderservice.dto.response.OrderResponse;
+import com.example.orderservice.entity.Order;
 import com.example.orderservice.exception.ServiceUnavailableException;
 import com.example.orderservice.service.OrderService;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
@@ -36,8 +36,7 @@ public class OrderController implements OrderControllerDoc {
     @CircuitBreaker(name = "orderController", fallbackMethod = "createFallbackOnCB")
     public void create(@RequestBody
                        CreateOrderRequest request) {
-        var order = modelMapper.map(request, Order.class);
-        orderService.create(order);
+        orderService.createOrder(request.getCustomerName());
     }
 
     private void createFallbackOnCB(CreateOrderRequest request, CallNotPermittedException ignored) {
@@ -48,7 +47,7 @@ public class OrderController implements OrderControllerDoc {
     @GetMapping
     @CircuitBreaker(name = "orderController", fallbackMethod = "getAllFallbackOnCB")
     public OrderListResponse getAll() {
-        var orderList = orderService.getAll();
+        var orderList = orderService.getAllOrders();
         var orderResponseList = orderList.stream()
                 .map(order -> modelMapper.map(order, OrderResponse.class))
                 .toList();
@@ -65,7 +64,7 @@ public class OrderController implements OrderControllerDoc {
     @CircuitBreaker(name = "orderController", fallbackMethod = "getByIdFallbackOnCB")
     public OrderResponse getById(@PathVariable
                                  UUID id) {
-        var order = orderService.getById(id);
+        var order = orderService.getOrderById(id);
         return modelMapper.map(order, OrderResponse.class);
     }
 
@@ -86,7 +85,7 @@ public class OrderController implements OrderControllerDoc {
                        UpdateOrderRequest request) {
 
         var order = modelMapper.map(request, Order.class);
-        orderService.update(id, order, idempotencyKey);
+        orderService.updateOrder(id, order, idempotencyKey);
     }
 
     private void updateFallbackOnCB(UUID idempotencyKey, UUID id, UpdateOrderRequest request, CallNotPermittedException ignored) {
@@ -98,7 +97,7 @@ public class OrderController implements OrderControllerDoc {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @CircuitBreaker(name = "orderController", fallbackMethod = "deleteFallbackOnCB")
     public void delete(@PathVariable UUID id) {
-        orderService.delete(id);
+        orderService.deleteOrder(id);
     }
 
     private void deleteFallbackOnCB(UUID id, CallNotPermittedException ignored) {

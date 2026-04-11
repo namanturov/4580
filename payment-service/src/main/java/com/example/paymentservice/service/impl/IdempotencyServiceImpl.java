@@ -38,7 +38,7 @@ public class IdempotencyServiceImpl implements IdempotencyService {
     IdempotencyManager idempotencyManager;
 
     @Override
-    public IdempotencyStore tryGet(UUID key, String requestBody) {
+    public IdempotencyStore tryGetKey(UUID key, String requestBody) {
         String requestHash = hash(requestBody);
         var timeNow = Instant.now();
         try {

@@ -1,11 +1,11 @@
-package com.example.orderservice.integration.client;
+package com.example.orderservice.integration.payment.feign.client;
 
-import com.example.orderservice.config.feign.PaymentClientConfig;
-import com.example.orderservice.dto.business.PaymentHttpHeader;
+import com.example.orderservice.api.header.PaymentHttpHeader;
 import com.example.orderservice.exception.RateLimitExceededException;
 import com.example.orderservice.exception.ServiceUnavailableException;
 import com.example.orderservice.exception.TooManyConcurrentRequestsException;
-import com.example.orderservice.integration.dto.request.CreatePaymentRequest;
+import com.example.orderservice.integration.payment.feign.config.PaymentClientConfig;
+import com.example.orderservice.integration.payment.feign.dto.request.CreatePaymentRequest;
 import io.github.resilience4j.bulkhead.BulkheadFullException;
 import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
@@ -22,7 +22,7 @@ import java.util.UUID;
 
 @FeignClient(
         name = "payment-client",
-        url = "${clients.payment.url}",
+        url = "${integration.client.payment.url}",
         configuration = PaymentClientConfig.class
 )
 public interface PaymentClient {

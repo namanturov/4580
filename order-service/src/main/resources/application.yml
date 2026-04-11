@@ -16,12 +16,26 @@ spring:
     properties:
       hibernate:
         format_sql: true
+    open-in-view: true
   h2:
     console:
       enabled: true
-clients:
-  payment:
-    url: http://localhost:8096/payments
+  rabbitmq:
+    username: namanturov
+    password: 4580
+    addresses: amqp://localhost:5673
+integration:
+  client:
+    payment:
+      url: http://localhost:8096/payments
+  rabbitmq:
+    payment:
+      exchange: payment-4580-exchange
+      create-payment:
+        routing-key: payment.create
+        queue: payment-create-queue
+      payment-status:
+        queue: payment-status-queue
 resilience4j:
   retry:
     instances:

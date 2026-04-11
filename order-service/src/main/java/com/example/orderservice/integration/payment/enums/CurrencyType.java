@@ -1,4 +1,4 @@
-package com.example.orderservice.integration.dto.enums;
+package com.example.orderservice.integration.payment.enums;
 
 public enum CurrencyType {
     USD,

@@ -1,9 +1,9 @@
-package com.example.orderservice.integration.client;
+package com.example.orderservice.integration.payment.feign.client;
 
 import com.example.orderservice.exception.EntityNotFoundException;
 import com.example.orderservice.exception.ExternalIntegrationServiceException;
-import com.example.orderservice.integration.dto.enums.CurrencyType;
-import com.example.orderservice.integration.dto.request.CreatePaymentRequest;
+import com.example.orderservice.integration.payment.enums.CurrencyType;
+import com.example.orderservice.integration.payment.feign.dto.request.CreatePaymentRequest;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

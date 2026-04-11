@@ -1,6 +1,6 @@
 package com.example.orderservice.repository.manager;
 
-import com.example.orderservice.entity.OrderEntity;
+import com.example.orderservice.entity.Order;
 import com.example.orderservice.exception.EntityNotFoundException;
 import com.example.orderservice.repository.OrderRepository;
 import lombok.AccessLevel;
@@ -23,15 +23,15 @@ public class OrderManager {
     OrderRepository orderRepository;
 
     @Transactional
-    public void save(OrderEntity orderEntity) {
-        orderRepository.save(orderEntity);
+    public Order save(Order order) {
+        return orderRepository.save(order);
     }
 
-    public List<OrderEntity> getAll() {
+    public List<Order> getAll() {
         return orderRepository.findAll();
     }
 
-    public OrderEntity getById(UUID id) {
+    public Order getById(UUID id) {
         return orderRepository.findById(id)
                 .orElseThrow(() -> {
                     var errorMessage = String.format("данная доставка не была найдена по id - %s", id);
@@ -41,7 +41,7 @@ public class OrderManager {
     }
 
     @Transactional
-    public void delete(OrderEntity orderEntity) {
-        orderRepository.delete(orderEntity);
+    public void delete(Order order) {
+        orderRepository.delete(order);
     }
 }
