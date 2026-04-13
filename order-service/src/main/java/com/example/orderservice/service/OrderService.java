@@ -1,23 +1,18 @@
 package com.example.orderservice.service;
 
-
-import com.example.orderservice.dto.request.UpdateOrderRequest;
-import com.example.orderservice.entity.Order;
-import com.example.orderservice.integration.payment.enums.PaymentStatus;
+import com.example.orderservice.dto.business.Order;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface OrderService {
-    void createOrder(String customerName);
+    void create(Order order);
 
-    List<Order> getAllOrders();
+    List<Order> getAll();
 
-    Order getOrderById(UUID id);
+    Order getById(UUID id);
 
-    void updateOrder(UUID id, UpdateOrderRequest request, UUID idempotencyKey);
+    void update(UUID id, Order order);
 
-    void updateOrderStatus(UUID orderId, PaymentStatus paymentStatus);
-
-    void deleteOrder(UUID id);
+    void delete(UUID id);
 }

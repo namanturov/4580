@@ -1,5 +1,6 @@
 package com.example.paymentservice.controller.docs;
 
+import com.example.paymentservice.dto.request.CreatePaymentRequest;
 import com.example.paymentservice.dto.request.UpdatePaymentRequest;
 import com.example.paymentservice.dto.response.PaymentListResponse;
 import com.example.paymentservice.dto.response.PaymentResponse;
@@ -13,6 +14,16 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import java.util.UUID;
 
 public interface PaymentControllerDoc {
+
+    @Operation(
+            summary = "Создать платёж",
+            description = "Создаёт новый платёж для указанного заказа",
+            responses = {
+                    @ApiResponse(responseCode = "201", description = "Платёж успешно создан")
+            }
+    )
+    void create(CreatePaymentRequest request);
+
     @Operation(
             summary = "Получить все платежи",
             description = "Возвращает список всех платежей",

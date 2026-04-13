@@ -1,6 +1,6 @@
 package com.example.paymentservice.repository.manager;
 
-import com.example.paymentservice.entity.Payment;
+import com.example.paymentservice.entity.PaymentEntity;
 import com.example.paymentservice.exception.EntityNotFoundException;
 import com.example.paymentservice.repository.PaymentRepository;
 import lombok.AccessLevel;
@@ -23,15 +23,15 @@ public class PaymentManager {
     PaymentRepository paymentRepository;
 
     @Transactional
-    public Payment save(Payment payment) {
-        return paymentRepository.save(payment);
+    public void save(PaymentEntity paymentEntity) {
+        paymentRepository.save(paymentEntity);
     }
 
-    public List<Payment> getAll() {
+    public List<PaymentEntity> getAll() {
         return paymentRepository.findAll();
     }
 
-    public Payment getById(UUID id) {
+    public PaymentEntity getById(UUID id) {
         return paymentRepository.findById(id)
                 .orElseThrow(() -> {
                     var errorMessage = String.format("данный платеж не был найден по id - %s", id);
@@ -41,7 +41,7 @@ public class PaymentManager {
     }
 
     @Transactional
-    public void delete(Payment payment) {
-        paymentRepository.delete(payment);
+    public void delete(PaymentEntity paymentEntity) {
+        paymentRepository.delete(paymentEntity);
     }
 }

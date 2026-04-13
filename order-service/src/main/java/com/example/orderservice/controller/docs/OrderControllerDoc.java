@@ -1,6 +1,5 @@
 package com.example.orderservice.controller.docs;
 
-import com.example.orderservice.api.header.PaymentHttpHeader;
 import com.example.orderservice.dto.request.CreateOrderRequest;
 import com.example.orderservice.dto.request.UpdateOrderRequest;
 import com.example.orderservice.dto.response.OrderListResponse;
@@ -11,7 +10,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import org.springframework.web.bind.annotation.RequestHeader;
 
 import java.util.List;
 import java.util.UUID;
@@ -61,9 +59,7 @@ public interface OrderControllerDoc {
                             content = @Content(schema = @Schema(implementation = Response.class)))
             }
     )
-    void update(@RequestHeader(PaymentHttpHeader.IDEMPOTENCY)
-                UUID idempotencyKey,
-                @Parameter(description = "ID заказа")
+    void update(@Parameter(description = "ID заказа")
                 UUID id,
                 UpdateOrderRequest request);
 

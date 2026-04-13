@@ -1,6 +1,6 @@
 package com.example.deliveryservice.repository.manager;
 
-import com.example.deliveryservice.entity.Delivery;
+import com.example.deliveryservice.entity.DeliveryEntity;
 import com.example.deliveryservice.exception.EntityNotFoundException;
 import com.example.deliveryservice.repository.DeliveryRepository;
 import lombok.AccessLevel;
@@ -23,15 +23,15 @@ public class DeliveryManager {
     DeliveryRepository deliveryRepository;
 
     @Transactional
-    public Delivery save(Delivery delivery) {
-        return deliveryRepository.save(delivery);
+    public void save(DeliveryEntity deliverEntity) {
+        deliveryRepository.save(deliverEntity);
     }
 
-    public List<Delivery> getAll() {
+    public List<DeliveryEntity> getAll() {
         return deliveryRepository.findAll();
     }
 
-    public Delivery getById(UUID id) {
+    public DeliveryEntity getById(UUID id) {
         return deliveryRepository.findById(id)
                 .orElseThrow(() -> {
                     var errorMessage = String.format("данная доставка не была найдена по id - %s", id);
@@ -41,7 +41,7 @@ public class DeliveryManager {
     }
 
     @Transactional
-    public void delete(Delivery delivery) {
-        deliveryRepository.delete(delivery);
+    public void delete(DeliveryEntity deliveryEntity) {
+        deliveryRepository.delete(deliveryEntity);
     }
 }

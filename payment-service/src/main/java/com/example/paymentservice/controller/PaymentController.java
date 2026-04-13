@@ -1,13 +1,12 @@
 package com.example.paymentservice.controller;
 
 import com.example.paymentservice.controller.docs.PaymentControllerDoc;
+import com.example.paymentservice.dto.business.Payment;
+import com.example.paymentservice.dto.request.CreatePaymentRequest;
 import com.example.paymentservice.dto.request.UpdatePaymentRequest;
 import com.example.paymentservice.dto.response.PaymentListResponse;
 import com.example.paymentservice.dto.response.PaymentResponse;
-import com.example.paymentservice.exception.ServiceUnavailableException;
 import com.example.paymentservice.service.PaymentService;
-import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -15,7 +14,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -28,10 +26,19 @@ public class PaymentController implements PaymentControllerDoc {
     ModelMapper modelMapper;
 
     @Override
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public void create(@RequestBody
+                       CreatePaymentRequest request) {
+        var payment = modelMapper.map(request, Payment.class);
+
+        paymentService.create(payment);
+    }
+
+    @Override
     @GetMapping
-    @CircuitBreaker(name = "paymentController", fallbackMethod = "getAllFallbackOnCB")
     public PaymentListResponse getAll() {
-        var paymentList = paymentService.getAllPayments();
+        var paymentList = paymentService.getAll();
         var paymentResponseList = paymentList.stream()
                 .map(payment -> modelMapper.map(payment, PaymentResponse.class))
                 .toList();
@@ -39,48 +46,32 @@ public class PaymentController implements PaymentControllerDoc {
         return PaymentListResponse.of(paymentResponseList);
     }
 
-    private PaymentListResponse getAllFallbackOnCB(CallNotPermittedException ignored) {
-        return PaymentListResponse.of(List.of());
-    }
-
     @Override
     @GetMapping("/{id}")
-    @CircuitBreaker(name = "paymentController", fallbackMethod = "getByIdFallbackOnCB")
     public PaymentResponse getById(@PathVariable
                                    UUID id) {
-        var payment = paymentService.getPaymentById(id);
-        return modelMapper.map(payment, PaymentResponse.class);
-    }
+        var payment = paymentService.getById(id);
 
-    private PaymentResponse getByIdFallbackOnCB(UUID id, CallNotPermittedException ignored) {
-        return new PaymentResponse();
+        return modelMapper.map(payment, PaymentResponse.class);
     }
 
     @Override
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @CircuitBreaker(name = "paymentController", fallbackMethod = "updateFallbackOnCB")
     public void update(@PathVariable
                        UUID id,
                        @RequestBody
                        UpdatePaymentRequest request) {
-        paymentService.updatePayment(id, request);
-    }
+        var payment = modelMapper.map(request, Payment.class);
 
-    private void updateFallbackOnCB(UUID id, UpdatePaymentRequest request, CallNotPermittedException ignored) {
-        throw new ServiceUnavailableException("Пока обновление payment не пашет, братец");
+        paymentService.update(id, payment);
     }
 
     @Override
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @CircuitBreaker(name = "paymentController", fallbackMethod = "deleteFallbackOnCB")
     public void delete(@PathVariable
                        UUID id) {
-        paymentService.deletePayment(id);
-    }
-
-    private void deleteFallbackOnCB(UUID id, CallNotPermittedException ignored) {
-        throw new ServiceUnavailableException("Удалить payment сейчас нельзя, эк");
+        paymentService.delete(id);
     }
 }

@@ -1,4 +1,4 @@
-package com.example.paymentservice.dto.response;
+package com.example.deliveryservice.dto.business;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -8,6 +8,8 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Response {
-    String message;
+public class Address {
+    String city;
+    String street;
+    String house;
 }

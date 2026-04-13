@@ -1,13 +1,16 @@
-package com.example.paymentservice.dto.response;
+package com.example.paymentservice.dto.request;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Response {
-    String message;
+public class CreatePaymentRequest {
+    UUID orderId;
+    CreateMoneyRequest money;
 }

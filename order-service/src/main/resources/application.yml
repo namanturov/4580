@@ -16,88 +16,9 @@ spring:
     properties:
       hibernate:
         format_sql: true
-    open-in-view: true
   h2:
     console:
       enabled: true
-  rabbitmq:
-    username: namanturov
-    password: 4580
-    addresses: amqp://localhost:5673
-  kafka:
-    bootstrap-servers: localhost:9093
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-    listener:
-      ack-mode: manual
-    consumer:
-      group-id: order-consumers
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      auto-offset-reset: earliest
-      enable-auto-commit: false
-      properties:
-        spring.json.use.type.headers: false
-        spring.json.trusted.packages: "*"
-integration:
-  client:
-    payment:
-      url: http://localhost:8096/payments
-  rabbitmq:
-    payment:
-      exchange: payment-4580-exchange
-      create-payment:
-        routing-key: payment.create
-        queue: payment-create-queue
-      payment-status:
-        queue: payment-status-queue
-  kafka:
-    order:
-      topics:
-        completed: order.completed
-resilience4j:
-  retry:
-    instances:
-      paymentClient:
-        max-attempts: 3
-        wait-duration: 2s
-        enable-exponential-backoff: true
-  circuitbreaker:
-    instances:
-      orderController:
-        register-health-indicator: true
-        sliding-window-size: 15
-        failure-rate-threshold: 50
-        slow-call-rate-threshold: 50
-        slow-call-duration-threshold: 5s
-        permitted-number-of-calls-in-half-open-state: 4
-        minimum-number-of-calls: 5
-        wait-duration-in-open-state: 10s
-        ignore-exceptions:
-          - com.example.orderservice.exception.EntityNotFoundException
-          - com.example.orderservice.exception.RateLimitExceededException
-          - com.example.orderservice.exception.TooManyConcurrentRequestsException
-      paymentClient:
-        register-health-indicator: true
-        sliding-window-size: 15
-        failure-rate-threshold: 50
-        slow-call-rate-threshold: 50
-        slow-call-duration-threshold: 5s
-        permitted-number-of-calls-in-half-open-state: 2
-        minimum-number-of-calls: 10
-        wait-duration-in-open-state: 10s
-        ignore-exceptions:
-          - com.example.orderservice.exception.RateLimitExceededException
-          - com.example.orderservice.exception.TooManyConcurrentRequestsException
-  ratelimiter:
-    instances:
-      paymentClient:
-        limit-for-period: 20
-        limit-refresh-period: 1m
-        timeout-duration: 1s
-  bulkhead:
-    instances:
-      paymentClient:
-        max-concurrent-calls: 3
-        max-wait-duration: 500ms
+clients:
+  payment:
+    url: http://localhost:8096/payments
