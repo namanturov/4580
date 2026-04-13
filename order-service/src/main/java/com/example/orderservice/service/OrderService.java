@@ -1,6 +1,7 @@
 package com.example.orderservice.service;
 
 
+import com.example.orderservice.dto.request.UpdateOrderRequest;
 import com.example.orderservice.entity.Order;
 import com.example.orderservice.integration.payment.enums.PaymentStatus;
 
@@ -14,7 +15,7 @@ public interface OrderService {
 
     Order getOrderById(UUID id);
 
-    void updateOrder(UUID id, Order order, UUID idempotencyKey);
+    void updateOrder(UUID id, UpdateOrderRequest request, UUID idempotencyKey);
 
     void updateOrderStatus(UUID orderId, PaymentStatus paymentStatus);
 

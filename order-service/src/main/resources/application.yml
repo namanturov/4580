@@ -24,6 +24,22 @@ spring:
     username: namanturov
     password: 4580
     addresses: amqp://localhost:5673
+  kafka:
+    bootstrap-servers: localhost:9093
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    listener:
+      ack-mode: manual
+    consumer:
+      group-id: order-consumers
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      properties:
+        spring.json.use.type.headers: false
+        spring.json.trusted.packages: "*"
 integration:
   client:
     payment:
@@ -36,6 +52,10 @@ integration:
         queue: payment-create-queue
       payment-status:
         queue: payment-status-queue
+  kafka:
+    order:
+      topics:
+        completed: order.completed
 resilience4j:
   retry:
     instances:

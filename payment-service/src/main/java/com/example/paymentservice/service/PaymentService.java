@@ -1,5 +1,6 @@
 package com.example.paymentservice.service;
 
+import com.example.paymentservice.dto.request.UpdatePaymentRequest;
 import com.example.paymentservice.entity.Payment;
 import com.example.paymentservice.enums.CurrencyType;
 import com.example.paymentservice.enums.PaymentStatus;
@@ -15,7 +16,7 @@ public interface PaymentService {
 
     Payment getPaymentById(UUID id);
 
-    void updatePayment(UUID id, Payment payment);
+    void updatePayment(UUID id, UpdatePaymentRequest request);
 
     Payment updatePaymentStatus(UUID id, PaymentStatus status);
 

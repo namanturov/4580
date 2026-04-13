@@ -1,5 +1,6 @@
 package com.example.paymentservice.service.impl;
 
+import com.example.paymentservice.dto.request.UpdatePaymentRequest;
 import com.example.paymentservice.entity.Money;
 import com.example.paymentservice.entity.Payment;
 import com.example.paymentservice.enums.CurrencyType;
@@ -46,17 +47,17 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public void updatePayment(UUID id, Payment payment) {
-        var paymentEntity = paymentManager.getById(id);
-        paymentEntity.setStatus(payment.getStatus());
+    public void updatePayment(UUID id, UpdatePaymentRequest request) {
+        var payment = paymentManager.getById(id);
+        payment.setStatus(request.getStatus());
         var newMoney = new Money()
-                .setAmount(payment.getMoney().getAmount())
-                .setCurrency(payment.getMoney().getCurrency());
-        if (!newMoney.equals(paymentEntity.getMoney())) {
-            paymentEntity.setMoney(newMoney);
+                .setAmount(request.getMoney().getAmount())
+                .setCurrency(request.getMoney().getCurrency());
+        if (!newMoney.equals(payment.getMoney())) {
+            payment.setMoney(newMoney);
         }
 
-        paymentManager.save(paymentEntity);
+        paymentManager.save(payment);
     }
 
     @Override
@@ -68,8 +69,8 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public void deletePayment(UUID id) {
-        var paymentEntity = paymentManager.getById(id);
+        var payment = paymentManager.getById(id);
 
-        paymentManager.delete(paymentEntity);
+        paymentManager.delete(payment);
     }
 }

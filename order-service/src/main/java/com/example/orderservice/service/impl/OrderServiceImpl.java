@@ -1,19 +1,22 @@
 package com.example.orderservice.service.impl;
 
+import com.example.orderservice.dto.request.UpdateOrderRequest;
 import com.example.orderservice.entity.Order;
 import com.example.orderservice.enums.OrderStatus;
+import com.example.orderservice.integration.delivery.kafka.dto.request.OrderCompletedEvent;
 import com.example.orderservice.integration.payment.enums.CurrencyType;
 import com.example.orderservice.integration.payment.enums.PaymentStatus;
 import com.example.orderservice.integration.payment.feign.client.PaymentClient;
 import com.example.orderservice.integration.payment.feign.dto.request.CreatePaymentRequest;
-import com.example.orderservice.integration.payment.rabbitmq.dto.request.PaymentRequestMessage;
 import com.example.orderservice.integration.payment.rabbitmq.producer.PaymentProducer;
+import com.example.orderservice.integration.properties.OrderKafkaProperties;
 import com.example.orderservice.repository.manager.OrderManager;
 import com.example.orderservice.service.OrderService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -26,6 +29,8 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class OrderServiceImpl implements OrderService {
 
+    KafkaTemplate<String, OrderCompletedEvent> kafkaTemplate;
+    OrderKafkaProperties orderKafkaProps;
     PaymentProducer paymentProducer;
     PaymentClient paymentClient;
     OrderManager orderManager;
@@ -36,8 +41,7 @@ public class OrderServiceImpl implements OrderService {
                 .setCustomerName(customerName)
                 .setStatus(OrderStatus.CREATED);
         var createdOrder = orderManager.save(order);
-        var reqMessage = PaymentRequestMessage.forCreate(createdOrder);
-        paymentProducer.sendCreatePayment(reqMessage);
+        paymentProducer.sendCreatePayment(createdOrder);
     }
 
     @Override
@@ -51,12 +55,12 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void updateOrder(UUID id, Order order, UUID idempotencyKey) {
+    public void updateOrder(UUID id, UpdateOrderRequest request, UUID idempotencyKey) {
         var existOrder = orderManager.getById(id);
-        var status = order.getStatus();
+        var status = request.getStatus();
         existOrder.setPrevStatus(existOrder.getStatus())
-                .setStatus(order.getStatus())
-                .setCustomerName(order.getCustomerName());
+                .setStatus(request.getStatus())
+                .setCustomerName(request.getCustomerName());
         if (status == OrderStatus.SUCCESS
                 || (status == OrderStatus.FAILED && existOrder.getPrevStatus() == OrderStatus.SUCCESS)) {
             BigDecimal fixedOrderPrice = BigDecimal.valueOf(4580.02);
@@ -80,7 +84,18 @@ public class OrderServiceImpl implements OrderService {
             default -> log.error("Шо то не так начала передавать статусы платежей. Нужно поговорить с ними");
         }
         orderManager.save(order);
-        log.info("заказ был зафинален по статусу поговорим с платежным ордером");
+        log.info("заказ был зафинален по статусу поговорив с платежным ордером");
+        publishOrderCompletedEvent(order);
+    }
+
+    private void publishOrderCompletedEvent(Order order) {
+        kafkaTemplate.send(
+                orderKafkaProps.topics().completed(),
+                order.getId().toString(),
+                OrderCompletedEvent.builder()
+                        .orderId(order.getId())
+                        .build()
+        );
     }
 
     @Override

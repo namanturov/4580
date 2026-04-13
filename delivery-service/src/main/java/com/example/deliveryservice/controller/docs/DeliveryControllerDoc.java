@@ -1,6 +1,5 @@
 package com.example.deliveryservice.controller.docs;
 
-import com.example.deliveryservice.dto.request.CreateDeliveryRequest;
 import com.example.deliveryservice.dto.request.UpdateDeliveryRequest;
 import com.example.deliveryservice.dto.response.DeliveryListResponse;
 import com.example.deliveryservice.dto.response.DeliveryResponse;
@@ -16,18 +15,6 @@ import java.util.UUID;
 
 @Tag(name = "Deliveries", description = "Операции с доставками")
 public interface DeliveryControllerDoc {
-
-    @Operation(
-            summary = "Создать доставку",
-            description = "Создаёт новую доставку с указанными параметрами",
-            responses = {
-                    @ApiResponse(responseCode = "201", description = "Доставка успешно создана"),
-                    @ApiResponse(responseCode = "400", description = "Некорректные данные запроса",
-                            content = @Content(schema = @Schema(implementation = Response.class)))
-            }
-    )
-    void create(CreateDeliveryRequest request);
-
     @Operation(
             summary = "Получить все доставки",
             description = "Возвращает список всех доставок",
