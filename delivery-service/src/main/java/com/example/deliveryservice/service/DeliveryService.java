@@ -1,18 +1,19 @@
 package com.example.deliveryservice.service;
 
-import com.example.deliveryservice.dto.business.Delivery;
+import com.example.deliveryservice.dto.request.UpdateDeliveryRequest;
+import com.example.deliveryservice.entity.Delivery;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface DeliveryService {
-    void create(Delivery delivery);
+    List<Delivery> getAllDeliveries();
 
-    List<Delivery> getAll();
+    Delivery getDeliveryById(UUID id);
 
-    Delivery getById(UUID id);
+    void updateDelivery(UUID id, UpdateDeliveryRequest request);
 
-    void update(UUID id, Delivery delivery);
+    void deleteDelivery(UUID id);
 
-    void delete(UUID id);
+    Delivery createDelivery(UUID orderId);
 }

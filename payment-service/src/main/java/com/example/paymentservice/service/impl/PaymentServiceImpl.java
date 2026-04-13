@@ -1,8 +1,9 @@
 package com.example.paymentservice.service.impl;
 
-import com.example.paymentservice.dto.business.Payment;
-import com.example.paymentservice.entity.MoneyEntity;
-import com.example.paymentservice.entity.PaymentEntity;
+import com.example.paymentservice.dto.request.UpdatePaymentRequest;
+import com.example.paymentservice.entity.Money;
+import com.example.paymentservice.entity.Payment;
+import com.example.paymentservice.enums.CurrencyType;
 import com.example.paymentservice.enums.PaymentStatus;
 import com.example.paymentservice.repository.manager.PaymentManager;
 import com.example.paymentservice.service.PaymentService;
@@ -10,9 +11,9 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -23,50 +24,53 @@ import java.util.UUID;
 public class PaymentServiceImpl implements PaymentService {
 
     PaymentManager paymentManager;
-    ModelMapper modelMapper;
 
     @Override
-    public void create(Payment payment) {
-        payment.setStatus(PaymentStatus.CREATED);
-        var paymentEntity = modelMapper.map(payment, PaymentEntity.class);
-
-        paymentManager.save(paymentEntity);
+    public Payment createPayment(UUID orderId, BigDecimal amount, CurrencyType currency) {
+        var payment = new Payment()
+                .setOrderId(orderId)
+                .setMoney(new Money()
+                        .setAmount(amount)
+                        .setCurrency(currency))
+                .setStatus(PaymentStatus.CREATED);
+        return paymentManager.save(payment);
     }
 
     @Override
-    public List<Payment> getAll() {
-        var paymentEntityList = paymentManager.getAll();
-
-        return paymentEntityList.stream()
-                .map(paymentEntity -> modelMapper.map(paymentEntity, Payment.class))
-                .toList();
+    public List<Payment> getAllPayments() {
+        return paymentManager.getAll();
     }
 
     @Override
-    public Payment getById(UUID id) {
-        var paymentEntity = paymentManager.getById(id);
-
-        return modelMapper.map(paymentEntity, Payment.class);
+    public Payment getPaymentById(UUID id) {
+        return paymentManager.getById(id);
     }
 
     @Override
-    public void update(UUID id, Payment payment) {
-        var paymentEntity = paymentManager.getById(id);
-        paymentEntity.setStatus(payment.getStatus());
-        var newMoney = new MoneyEntity()
-                .setAmount(payment.getMoney().getAmount())
-                .setCurrency(payment.getMoney().getCurrency());
-        if (!newMoney.equals(paymentEntity.getMoney())) {
-            paymentEntity.setMoney(newMoney);
+    public void updatePayment(UUID id, UpdatePaymentRequest request) {
+        var payment = paymentManager.getById(id);
+        payment.setStatus(request.getStatus());
+        var newMoney = new Money()
+                .setAmount(request.getMoney().getAmount())
+                .setCurrency(request.getMoney().getCurrency());
+        if (!newMoney.equals(payment.getMoney())) {
+            payment.setMoney(newMoney);
         }
 
-        paymentManager.save(paymentEntity);
+        paymentManager.save(payment);
     }
 
     @Override
-    public void delete(UUID id) {
-        var paymentEntity = paymentManager.getById(id);
+    public Payment updatePaymentStatus(UUID id, PaymentStatus status) {
+        var payment = paymentManager.getById(id);
+        payment.setStatus(status);
+        return paymentManager.save(payment);
+    }
 
-        paymentManager.delete(paymentEntity);
+    @Override
+    public void deletePayment(UUID id) {
+        var payment = paymentManager.getById(id);
+
+        paymentManager.delete(payment);
     }
 }

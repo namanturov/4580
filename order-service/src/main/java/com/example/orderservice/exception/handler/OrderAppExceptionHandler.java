@@ -1,8 +1,7 @@
 package com.example.orderservice.exception.handler;
 
 import com.example.orderservice.dto.response.Response;
-import com.example.orderservice.exception.EntityNotFoundException;
-import com.example.orderservice.exception.ExternalIntegrationServiceException;
+import com.example.orderservice.exception.*;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -10,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ControllerAdvice
 @RequiredArgsConstructor
@@ -29,5 +27,26 @@ public class OrderAppExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Response.of("ой, что-то пошло не так. Уже чиним, братан 😓."));
+    }
+
+    @ExceptionHandler(ServiceUnavailableException.class)
+    public ResponseEntity<Response> handleServiceUnavailableException(ServiceUnavailableException e) {
+        return ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(Response.of(e.getMessage()));
+    }
+
+    @ExceptionHandler(TooManyConcurrentRequestsException.class)
+    public ResponseEntity<Response> handleTooManyConcurrentRequestsException(TooManyConcurrentRequestsException e) {
+        return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(Response.of(e.getMessage()));
+    }
+
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<Response> handleRateLimitExceededException(RateLimitExceededException e) {
+        return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(Response.of(e.getMessage()));
     }
 }

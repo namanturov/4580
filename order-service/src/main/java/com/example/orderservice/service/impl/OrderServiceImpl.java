@@ -1,18 +1,22 @@
 package com.example.orderservice.service.impl;
 
-import com.example.orderservice.dto.business.Order;
-import com.example.orderservice.entity.OrderEntity;
+import com.example.orderservice.dto.request.UpdateOrderRequest;
+import com.example.orderservice.entity.Order;
 import com.example.orderservice.enums.OrderStatus;
-import com.example.orderservice.integration.client.PaymentClient;
-import com.example.orderservice.integration.dto.enums.CurrencyType;
-import com.example.orderservice.integration.dto.request.CreatePaymentRequest;
+import com.example.orderservice.integration.delivery.kafka.dto.request.OrderCompletedEvent;
+import com.example.orderservice.integration.payment.enums.CurrencyType;
+import com.example.orderservice.integration.payment.enums.PaymentStatus;
+import com.example.orderservice.integration.payment.feign.client.PaymentClient;
+import com.example.orderservice.integration.payment.feign.dto.request.CreatePaymentRequest;
+import com.example.orderservice.integration.payment.rabbitmq.producer.PaymentProducer;
+import com.example.orderservice.integration.properties.OrderKafkaProperties;
 import com.example.orderservice.repository.manager.OrderManager;
 import com.example.orderservice.service.OrderService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.modelmapper.ModelMapper;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -25,52 +29,79 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class OrderServiceImpl implements OrderService {
 
+    KafkaTemplate<String, OrderCompletedEvent> kafkaTemplate;
+    OrderKafkaProperties orderKafkaProps;
+    PaymentProducer paymentProducer;
     PaymentClient paymentClient;
     OrderManager orderManager;
-    ModelMapper modelMapper;
 
     @Override
-    public void create(Order order) {
-        order.setStatus(OrderStatus.CREATED);
-        var orderEntity = modelMapper.map(order, OrderEntity.class);
-        orderManager.save(orderEntity);
+    public void createOrder(String customerName) {
+        var order = new Order()
+                .setCustomerName(customerName)
+                .setStatus(OrderStatus.CREATED);
+        var createdOrder = orderManager.save(order);
+        paymentProducer.sendCreatePayment(createdOrder);
     }
 
     @Override
-    public List<Order> getAll() {
-        var orderEntityList = orderManager.getAll();
-
-        return orderEntityList.stream()
-                .map(orderEntity -> modelMapper.map(orderEntity, Order.class))
-                .toList();
+    public List<Order> getAllOrders() {
+        return orderManager.getAll();
     }
 
     @Override
-    public Order getById(UUID id) {
-        var orderEntity = orderManager.getById(id);
-
-        return modelMapper.map(orderEntity, Order.class);
+    public Order getOrderById(UUID id) {
+        return orderManager.getById(id);
     }
 
     @Override
-    public void update(UUID id, Order order) {
-        var orderEntity = orderManager.getById(id);
-        var status = order.getStatus();
-        orderEntity.setPrevStatus(orderEntity.getStatus())
-                .setStatus(order.getStatus())
-                .setCustomerName(order.getCustomerName());
+    public void updateOrder(UUID id, UpdateOrderRequest request, UUID idempotencyKey) {
+        var existOrder = orderManager.getById(id);
+        var status = request.getStatus();
+        existOrder.setPrevStatus(existOrder.getStatus())
+                .setStatus(request.getStatus())
+                .setCustomerName(request.getCustomerName());
         if (status == OrderStatus.SUCCESS
-                || (status == OrderStatus.FAILED && orderEntity.getPrevStatus() == OrderStatus.SUCCESS)) {
+                || (status == OrderStatus.FAILED && existOrder.getPrevStatus() == OrderStatus.SUCCESS)) {
             BigDecimal fixedOrderPrice = BigDecimal.valueOf(4580.02);
             var createPaymentReq = CreatePaymentRequest.of(id, fixedOrderPrice, CurrencyType.KGS);
-            paymentClient.create(createPaymentReq);
+            paymentClient.create(idempotencyKey, createPaymentReq);
         }
     }
 
     @Override
-    public void delete(UUID id) {
-        var orderEntity = orderManager.getById(id);
+    public void updateOrderStatus(UUID orderId, PaymentStatus paymentStatus) {
+        var order = orderManager.getById(orderId);
+        switch (paymentStatus) {
+            case ERROR -> {
+                order.setPrevStatus(order.getStatus());
+                order.setStatus(OrderStatus.FAILED);
+            }
+            case PAID -> {
+                order.setPrevStatus(order.getStatus());
+                order.setStatus(OrderStatus.SUCCESS);
+            }
+            default -> log.error("Шо то не так начала передавать статусы платежей. Нужно поговорить с ними");
+        }
+        orderManager.save(order);
+        log.info("заказ был зафинален по статусу поговорив с платежным ордером");
+        publishOrderCompletedEvent(order);
+    }
 
-        orderManager.delete(orderEntity);
+    private void publishOrderCompletedEvent(Order order) {
+        kafkaTemplate.send(
+                orderKafkaProps.topics().completed(),
+                order.getId().toString(),
+                OrderCompletedEvent.builder()
+                        .orderId(order.getId())
+                        .build()
+        );
+    }
+
+    @Override
+    public void deleteOrder(UUID id) {
+        var order = orderManager.getById(id);
+
+        orderManager.delete(order);
     }
 }
