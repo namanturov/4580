@@ -1,4 +1,4 @@
-package com.example.paymentservice.enums;
+package com.example.orderservice.integration.payment.enums;
 
 public enum PaymentStatus {
     CREATED,

@@ -1,6 +1,6 @@
-package com.example.orderservice.config.feign;
+package com.example.orderservice.integration.payment.feign.config;
 
-import com.example.orderservice.integration.handler.PaymentClientErrorDecoder;
+import com.example.orderservice.integration.payment.feign.handler.PaymentClientErrorDecoder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

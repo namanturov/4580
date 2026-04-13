@@ -19,10 +19,10 @@ public interface PaymentControllerDoc {
             summary = "Создать платёж",
             description = "Создаёт новый платёж для указанного заказа",
             responses = {
-                    @ApiResponse(responseCode = "201", description = "Платёж успешно создан")
+                    @ApiResponse(responseCode = "200", description = "Платёж успешно создан")
             }
     )
-    void create(CreatePaymentRequest request);
+    PaymentResponse create(CreatePaymentRequest request);
 
     @Operation(
             summary = "Получить все платежи",

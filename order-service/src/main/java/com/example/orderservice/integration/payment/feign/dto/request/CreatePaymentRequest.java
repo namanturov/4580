@@ -1,6 +1,6 @@
-package com.example.orderservice.integration.dto.request;
+package com.example.orderservice.integration.payment.feign.dto.request;
 
-import com.example.orderservice.integration.dto.enums.CurrencyType;
+import com.example.orderservice.integration.payment.enums.CurrencyType;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;

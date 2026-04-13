@@ -60,7 +60,7 @@ public class IdempotencyFilter extends OncePerRequestFilter {
         String requestBody = getRequestBody(request);
         String normalizedBody = toOrderedJsonBody(requestBody);
 
-        var idempotencyStore = idempotencyService.tryGet(idempotencyKey, normalizedBody);
+        var idempotencyStore = idempotencyService.tryGetKey(idempotencyKey, normalizedBody);
 
         if (IdempotencyStatus.DONE.equals(idempotencyStore.getStatus())) {
             response.setStatus(idempotencyStore.getResponseStatus());

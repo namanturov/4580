@@ -1,4 +1,4 @@
-package com.example.orderservice.integration.handler;
+package com.example.orderservice.integration.payment.feign.handler;
 
 import com.example.orderservice.exception.EntityNotFoundException;
 import com.example.orderservice.exception.ExternalIntegrationServiceException;

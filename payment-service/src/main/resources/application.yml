@@ -20,6 +20,10 @@ spring:
   h2:
     console:
       enabled: true
+  rabbitmq:
+    username: namanturov
+    password: 4580
+    addresses: amqp://localhost:5673
 idempotency:
   ttl: 24h
 resilience4j:
@@ -41,3 +45,12 @@ rate:
     refill:
       tokens: 10
       period: 5s
+integration:
+  rabbitmq:
+    order:
+      exchange: payment-4580-exchange
+      payment-status:
+        routing-key: payment.status.updated
+        queue: payment-status-queue
+      create-payment:
+        queue: payment-create-queue

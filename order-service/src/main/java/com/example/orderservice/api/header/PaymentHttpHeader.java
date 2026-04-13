@@ -1,4 +1,4 @@
-package com.example.orderservice.dto.business;
+package com.example.orderservice.api.header;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

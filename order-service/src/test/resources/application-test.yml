@@ -1,3 +1,4 @@
-clients:
-  payment:
-    url: http://localhost:${wiremock.server.port}/payments
+integration:
+  client:
+    payment:
+      url: http://localhost:${wiremock.server.port}/payments
