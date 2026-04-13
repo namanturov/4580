@@ -35,7 +35,10 @@ public class PaymentController implements PaymentControllerDoc {
     @CircuitBreaker(name = "paymentController", fallbackMethod = "createFallbackOnCB")
     public void create(@RequestBody
                        CreatePaymentRequest request) {
-        throw new RuntimeException();
+        //тут оказ тестировал и забыл вернуть корректный код...можете не обращать внимание на это
+        var payment = modelMapper.map(request, Payment.class);
+
+        paymentService.create(payment);
     }
 
     private void createFallbackOnCB(CreatePaymentRequest request, CallNotPermittedException ignored) {

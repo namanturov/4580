@@ -2,7 +2,6 @@ package com.example.orderservice.integration.client;
 
 import com.example.orderservice.config.feign.PaymentClientConfig;
 import com.example.orderservice.dto.business.PaymentHttpHeader;
-import com.example.orderservice.exception.ExternalIntegrationServiceException;
 import com.example.orderservice.exception.RateLimitExceededException;
 import com.example.orderservice.exception.ServiceUnavailableException;
 import com.example.orderservice.exception.TooManyConcurrentRequestsException;
@@ -31,7 +30,7 @@ public interface PaymentClient {
     @CircuitBreaker(name = "paymentClient", fallbackMethod = "createFallbackOnCircuitBreaker")
     @RateLimiter(name = "paymentClient", fallbackMethod = "createFallbackOnRateLimiter")
     @Bulkhead(name = "paymentClient", fallbackMethod = "createFallbackOnBulkhead")
-    @Retry(name = "paymentClient", fallbackMethod = "createFallbackOnRetry")
+    @Retry(name = "paymentClient")//и тестируя понял что для него и не нужен fallbackMethod.
     void create(@RequestHeader(PaymentHttpHeader.IDEMPOTENCY)
                 UUID idempotencyKey,
                 @RequestBody
@@ -39,11 +38,6 @@ public interface PaymentClient {
 
     //ну по идеи можно было на некоторые redirect на чет другие сервисы. Аля с кеша или тип того, но было лень думать,
     //потому чисто exceptions выкидываю. Ну а так дааа я пон что можно туда сюда делать.
-    default void createFallbackOnRetry(UUID idempotencyKey,
-                                       CreatePaymentRequest request,
-                                       ExternalIntegrationServiceException ignored) {
-        throw new ServiceUnavailableException("Payment-service временно недоступен, попробуй позже");
-    }
 
     default void createFallbackOnBulkhead(UUID idempotencyKey,
                                           CreatePaymentRequest request,

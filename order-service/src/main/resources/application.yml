@@ -22,3 +22,48 @@ spring:
 clients:
   payment:
     url: http://localhost:8096/payments
+resilience4j:
+  retry:
+    instances:
+      paymentClient:
+        max-attempts: 3
+        wait-duration: 2s
+        enable-exponential-backoff: true
+  circuitbreaker:
+    instances:
+      orderController:
+        register-health-indicator: true
+        sliding-window-size: 15
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 50
+        slow-call-duration-threshold: 5s
+        permitted-number-of-calls-in-half-open-state: 4
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state: 10s
+        ignore-exceptions:
+          - com.example.orderservice.exception.EntityNotFoundException
+          - com.example.orderservice.exception.RateLimitExceededException
+          - com.example.orderservice.exception.TooManyConcurrentRequestsException
+      paymentClient:
+        register-health-indicator: true
+        sliding-window-size: 15
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 50
+        slow-call-duration-threshold: 5s
+        permitted-number-of-calls-in-half-open-state: 2
+        minimum-number-of-calls: 10
+        wait-duration-in-open-state: 10s
+        ignore-exceptions:
+          - com.example.orderservice.exception.RateLimitExceededException
+          - com.example.orderservice.exception.TooManyConcurrentRequestsException
+  ratelimiter:
+    instances:
+      paymentClient:
+        limit-for-period: 20
+        limit-refresh-period: 1m
+        timeout-duration: 1s
+  bulkhead:
+    instances:
+      paymentClient:
+        max-concurrent-calls: 3
+        max-wait-duration: 500ms

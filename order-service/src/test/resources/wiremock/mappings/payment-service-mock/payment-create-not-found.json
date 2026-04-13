@@ -1,0 +1,14 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/payments",
+    "bodyPatterns": [
+      {
+        "matchesJsonPath": "$[?(@.orderId == '69d0f3ad-d7f8-8329-a327-ccdaa44d2d2d')]"
+      }
+    ]
+  },
+  "response": {
+    "status": 404
+  }
+}
