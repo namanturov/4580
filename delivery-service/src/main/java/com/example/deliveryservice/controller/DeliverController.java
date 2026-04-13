@@ -1,8 +1,6 @@
 package com.example.deliveryservice.controller;
 
 import com.example.deliveryservice.controller.docs.DeliveryControllerDoc;
-import com.example.deliveryservice.dto.business.Delivery;
-import com.example.deliveryservice.dto.request.CreateDeliveryRequest;
 import com.example.deliveryservice.dto.request.UpdateDeliveryRequest;
 import com.example.deliveryservice.dto.response.DeliveryListResponse;
 import com.example.deliveryservice.dto.response.DeliveryResponse;
@@ -30,24 +28,10 @@ public class DeliverController implements DeliveryControllerDoc {
     ModelMapper modelMapper;
 
     @Override
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    @CircuitBreaker(name = "deliveryController", fallbackMethod = "createFallbackOnCB")
-    public void create(@RequestBody
-                       CreateDeliveryRequest request) {
-        var delivery = modelMapper.map(request, Delivery.class);
-        deliveryService.create(delivery);
-    }
-
-    private void createFallbackOnCB(CreateDeliveryRequest request, CallNotPermittedException ignored) {
-        throw new ServiceUnavailableException("Пока создать delivery нельзя, братан");
-    }
-
-    @Override
     @GetMapping
     @CircuitBreaker(name = "deliveryController", fallbackMethod = "getAllFallbackOnCB")
     public DeliveryListResponse getAll() {
-        var deliveryList = deliveryService.getAll();
+        var deliveryList = deliveryService.getAllDeliveries();
         var deliveryResponseList = deliveryList.stream()
                 .map(delivery -> modelMapper.map(delivery, DeliveryResponse.class))
                 .toList();
@@ -64,7 +48,7 @@ public class DeliverController implements DeliveryControllerDoc {
     @CircuitBreaker(name = "deliveryController", fallbackMethod = "getByIdFallbackOnCB")
     public DeliveryResponse getById(@PathVariable
                                     UUID id) {
-        var delivery = deliveryService.getById(id);
+        var delivery = deliveryService.getDeliveryById(id);
         return modelMapper.map(delivery, DeliveryResponse.class);
     }
 
@@ -80,9 +64,7 @@ public class DeliverController implements DeliveryControllerDoc {
                        UUID id,
                        @RequestBody
                        UpdateDeliveryRequest request) {
-
-        var delivery = modelMapper.map(request, Delivery.class);
-        deliveryService.update(id, delivery);
+        deliveryService.updateDelivery(id, request);
     }
 
     private void updateFallbackOnCB(UUID id, UpdateDeliveryRequest request, CallNotPermittedException ignored) {
@@ -95,7 +77,7 @@ public class DeliverController implements DeliveryControllerDoc {
     @CircuitBreaker(name = "deliveryController", fallbackMethod = "deleteFallbackOnCB")
     public void delete(@PathVariable
                        UUID id) {
-        deliveryService.delete(id);
+        deliveryService.deleteDelivery(id);
     }
 
     private void deleteFallbackOnCB(UUID id, CallNotPermittedException ignored) {

@@ -1,11 +1,9 @@
 package com.example.paymentservice.controller;
 
 import com.example.paymentservice.controller.docs.PaymentControllerDoc;
-import com.example.paymentservice.dto.request.CreatePaymentRequest;
 import com.example.paymentservice.dto.request.UpdatePaymentRequest;
 import com.example.paymentservice.dto.response.PaymentListResponse;
 import com.example.paymentservice.dto.response.PaymentResponse;
-import com.example.paymentservice.entity.Payment;
 import com.example.paymentservice.exception.ServiceUnavailableException;
 import com.example.paymentservice.service.PaymentService;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
@@ -28,24 +26,6 @@ public class PaymentController implements PaymentControllerDoc {
 
     PaymentService paymentService;
     ModelMapper modelMapper;
-
-    @Override
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    @CircuitBreaker(name = "paymentController", fallbackMethod = "createFallbackOnCB")
-    public PaymentResponse create(@RequestBody
-                                  CreatePaymentRequest request) {
-        var money = request.getMoney();
-        var savedPayment = paymentService.createPayment(
-                request.getOrderId(),
-                money.getAmount(),
-                money.getCurrency());
-        return modelMapper.map(savedPayment, PaymentResponse.class);
-    }
-
-    private void createFallbackOnCB(CreatePaymentRequest request, CallNotPermittedException ignored) {
-        throw new ServiceUnavailableException("Пока создать payment нельзя, братан");
-    }
 
     @Override
     @GetMapping
@@ -84,9 +64,7 @@ public class PaymentController implements PaymentControllerDoc {
                        UUID id,
                        @RequestBody
                        UpdatePaymentRequest request) {
-
-        var payment = modelMapper.map(request, Payment.class);
-        paymentService.updatePayment(id, payment);
+        paymentService.updatePayment(id, request);
     }
 
     private void updateFallbackOnCB(UUID id, UpdatePaymentRequest request, CallNotPermittedException ignored) {

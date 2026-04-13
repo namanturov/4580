@@ -83,9 +83,7 @@ public class OrderController implements OrderControllerDoc {
                        UUID id,
                        @RequestBody
                        UpdateOrderRequest request) {
-
-        var order = modelMapper.map(request, Order.class);
-        orderService.updateOrder(id, order, idempotencyKey);
+        orderService.updateOrder(id, request, idempotencyKey);
     }
 
     private void updateFallbackOnCB(UUID idempotencyKey, UUID id, UpdateOrderRequest request, CallNotPermittedException ignored) {
