@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
+import tools.jackson.databind.json.JsonMapper;
 
 @Slf4j
 @Component
@@ -18,20 +19,26 @@ import org.springframework.stereotype.Component;
 public class OrderConsumer {
 
     DeliveryService deliveryService;
+    JsonMapper jsonMapper;
 
     @KafkaListener(
             topics = "${integration.kafka.order.topics.completed}",
             groupId = "${spring.kafka.consumer.group-id}")
-    public void consume(OrderCompletedEvent event,
+    public void consume(String message,
                         Acknowledgment ack) {
-        log.info("Получено событие завершения заказа. orderId={}", event.orderId());
+        try {
+            var event = jsonMapper.readValue(message, OrderCompletedEvent.class);
+            log.info("Получено событие завершения заказа. orderId={}", event.orderId());
 
-        Delivery delivery = deliveryService.createDelivery(event.orderId());
+            Delivery delivery = deliveryService.createDelivery(event.orderId());
 
-        log.info("Доставка создана. deliveryId={}", delivery.getId());
+            log.info("Доставка создана. deliveryId={}", delivery.getId());
 
-        ack.acknowledge();
+            ack.acknowledge();
 
-        log.info("Событие успешно обработано и подтверждено. orderId={}", event.orderId());
+            log.info("Событие успешно обработано и подтверждено. orderId={}", event.orderId());
+        } catch (Exception e) {
+            log.error("Произошла ошибка во время обработки event: {}", e.getMessage(), e);
+        }
     }
 }
