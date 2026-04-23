@@ -21,8 +21,6 @@ bdelivery-service/src/main/java/com/example/deliveryservice/repository/manager/D
 Zdelivery-service/src/main/java/com/example/deliveryservice/DeliveryServiceApplication.java,0\2\0233e86fca05dcc4172bb8c6b3a070a985de219d
 H
 delivery-service/pom.xml,c\9\c964681acb8f70efec02e7c41e1e03c2041d8c8c
-§
-torder-service/src/main/java/com/example/orderservice/integration/delivery/kafka/dto/request/OrderCompletedEvent.java,7\c\7cd6cd01eb7999d0abf49886bbbb997493f0923a
 ü
 oorder-service/src/main/java/com/example/orderservice/integration/payment/rabbitmq/producer/PaymentProducer.java,9\a\9a5a085c0d856d817103c1e2b87d861ebf6f70e0
 Å

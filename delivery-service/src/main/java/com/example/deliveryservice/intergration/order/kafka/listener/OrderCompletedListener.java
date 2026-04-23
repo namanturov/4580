@@ -1,4 +1,4 @@
-package com.example.deliveryservice.intergration.order.kafka.consumer;
+package com.example.deliveryservice.intergration.order.kafka.listener;
 
 import com.example.deliveryservice.entity.Delivery;
 import com.example.deliveryservice.intergration.order.kafka.dto.request.OrderCompletedEvent;
@@ -16,7 +16,7 @@ import tools.jackson.databind.json.JsonMapper;
 @Component
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class OrderConsumer {
+public class OrderCompletedListener {
 
     DeliveryService deliveryService;
     JsonMapper jsonMapper;
