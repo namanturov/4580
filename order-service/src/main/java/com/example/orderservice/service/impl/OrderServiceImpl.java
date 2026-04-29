@@ -2,6 +2,7 @@ package com.example.orderservice.service.impl;
 
 import com.example.orderservice.dto.request.UpdateOrderRequest;
 import com.example.orderservice.entity.Order;
+import com.example.orderservice.entity.async.AsyncMessage;
 import com.example.orderservice.enums.OrderStatus;
 import com.example.orderservice.integration.delivery.kafka.dto.request.OrderCompletedEvent;
 import com.example.orderservice.integration.payment.enums.CurrencyType;
@@ -11,13 +12,14 @@ import com.example.orderservice.integration.payment.feign.dto.request.CreatePaym
 import com.example.orderservice.integration.payment.rabbitmq.producer.PaymentProducer;
 import com.example.orderservice.integration.properties.OrderKafkaProperties;
 import com.example.orderservice.repository.manager.OrderManager;
+import com.example.orderservice.service.AsyncMessageService;
 import com.example.orderservice.service.OrderService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -29,11 +31,12 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class OrderServiceImpl implements OrderService {
 
-    KafkaTemplate<String, OrderCompletedEvent> kafkaTemplate;
+    AsyncMessageService asyncMessageService;
     OrderKafkaProperties orderKafkaProps;
     PaymentProducer paymentProducer;
     PaymentClient paymentClient;
     OrderManager orderManager;
+    JsonMapper jsonMapper;
 
     @Override
     public void createOrder(String customerName) {
@@ -85,17 +88,24 @@ public class OrderServiceImpl implements OrderService {
         }
         orderManager.save(order);
         log.info("заказ был зафинален по статусу поговорив с платежным ордером");
-        publishOrderCompletedEvent(order);
+        createAndSaveOrderCompletedEvent(order);
     }
 
-    private void publishOrderCompletedEvent(Order order) {
-        kafkaTemplate.send(
+    private void createAndSaveOrderCompletedEvent(Order order) {
+        var event = OrderCompletedEvent.builder()
+                .orderId(order.getId())
+                .build();
+
+        var payload = jsonMapper.writeValueAsString(event);
+
+        var asyncMessage = AsyncMessage.createOutboxMessage(
                 orderKafkaProps.topics().completed(),
-                order.getId().toString(),
-                OrderCompletedEvent.builder()
-                        .orderId(order.getId())
-                        .build()
-        );
+                payload);
+
+        asyncMessageService.saveMessage(asyncMessage);
+        log.info("Создано и сохранено outbox-сообщение OrderCompleted. orderId={}, topic={}",
+                order.getId(),
+                asyncMessage.getMessageId().getTopic());
     }
 
     @Override
