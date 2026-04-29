@@ -32,7 +32,8 @@ public class AsyncMessage implements Persistable<AsyncMessageId> {
     @CreationTimestamp
     OffsetDateTime createdAt;
 
-    public static AsyncMessage createOutboxMessage(String topic, String payload) {
+    public static AsyncMessage createOutboxMessage(String topic,
+                                                   String payload) {
         return AsyncMessage.builder()
                 .messageId(AsyncMessageId.builder()
                         .id(UUID.randomUUID())
@@ -41,6 +42,20 @@ public class AsyncMessage implements Persistable<AsyncMessageId> {
                 .payload(payload)
                 .type(AsyncMessageType.OUTBOX)
                 .status(AsyncMessageStatus.CREATED)
+                .build();
+    }
+
+    public static AsyncMessage createInboxMessage(String id,
+                                                  String topic,
+                                                  String message) {
+        return AsyncMessage.builder()
+                .messageId(AsyncMessageId.builder()
+                        .id(UUID.fromString(id))
+                        .topic(topic)
+                        .build())
+                .payload(message)
+                .status(AsyncMessageStatus.RECEIVED)
+                .type(AsyncMessageType.INBOX)
                 .build();
     }
 

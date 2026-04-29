@@ -1,6 +1,6 @@
 package com.example.orderservice.integration.payment.feign.client;
 
-import com.example.orderservice.api.header.PaymentHttpHeader;
+import com.example.orderservice.infrastructure.header.Headers;
 import com.example.orderservice.exception.RateLimitExceededException;
 import com.example.orderservice.exception.ServiceUnavailableException;
 import com.example.orderservice.exception.TooManyConcurrentRequestsException;
@@ -31,7 +31,7 @@ public interface PaymentClient {
     @RateLimiter(name = "paymentClient", fallbackMethod = "createFallbackOnRateLimiter")
     @Bulkhead(name = "paymentClient", fallbackMethod = "createFallbackOnBulkhead")
     @Retry(name = "paymentClient")//и тестируя понял что для него и не нужен fallbackMethod.
-    void create(@RequestHeader(PaymentHttpHeader.IDEMPOTENCY)
+    void create(@RequestHeader(Headers.IDEMPOTENCY_KEY)
                 UUID idempotencyKey,
                 @RequestBody
                 CreatePaymentRequest request);

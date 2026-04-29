@@ -1,6 +1,6 @@
 package com.example.orderservice.controller;
 
-import com.example.orderservice.api.header.PaymentHttpHeader;
+import com.example.orderservice.infrastructure.header.Headers;
 import com.example.orderservice.controller.docs.OrderControllerDoc;
 import com.example.orderservice.dto.request.CreateOrderRequest;
 import com.example.orderservice.dto.request.UpdateOrderRequest;
@@ -76,7 +76,7 @@ public class OrderController implements OrderControllerDoc {
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @CircuitBreaker(name = "orderController", fallbackMethod = "updateFallbackOnCB")
-    public void update(@RequestHeader(PaymentHttpHeader.IDEMPOTENCY)
+    public void update(@RequestHeader(Headers.IDEMPOTENCY_KEY)
                        UUID idempotencyKey,
                        @PathVariable
                        UUID id,

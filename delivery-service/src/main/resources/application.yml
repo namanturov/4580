@@ -48,9 +48,8 @@ resilience4j:
           - com.example.deliveryservice.exception.EntityNotFoundException
 integration:
   kafka:
-    delivery:
-      topics:
+    topics:
+      delivery:
         created: delivery.created
-    order:
-      topics:
+      order:
         completed: order.completed

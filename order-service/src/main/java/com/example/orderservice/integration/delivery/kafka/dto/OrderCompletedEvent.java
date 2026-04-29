@@ -1,4 +1,4 @@
-package com.example.orderservice.integration.delivery.kafka.dto.request;
+package com.example.orderservice.integration.delivery.kafka.dto;
 
 import lombok.Builder;
 

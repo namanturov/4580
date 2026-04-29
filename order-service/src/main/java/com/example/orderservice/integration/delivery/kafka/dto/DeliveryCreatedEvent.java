@@ -1,10 +1,7 @@
-package com.example.deliveryservice.intergration.order.kafka.dto.response;
-
-import lombok.Builder;
+package com.example.orderservice.integration.delivery.kafka.dto;
 
 import java.util.UUID;
 
-@Builder
 public record DeliveryCreatedEvent(
         UUID deliveryId,
         UUID orderId

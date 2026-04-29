@@ -1,7 +1,7 @@
 package com.example.deliveryservice.intergration.order.kafka.listener;
 
 import com.example.deliveryservice.entity.Delivery;
-import com.example.deliveryservice.intergration.order.kafka.dto.request.OrderCompletedEvent;
+import com.example.deliveryservice.intergration.order.kafka.dto.OrderCompletedEvent;
 import com.example.deliveryservice.service.DeliveryService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ public class OrderCompletedListener {
     JsonMapper jsonMapper;
 
     @KafkaListener(
-            topics = "${integration.kafka.order.topics.completed}",
+            topics = "${integration.kafka.topics.order.completed}",
             groupId = "${spring.kafka.consumer.group-id}")
     public void consume(String message,
                         Acknowledgment ack) {
