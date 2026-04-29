@@ -54,10 +54,8 @@ integration:
       payment-status:
         queue: payment-status-queue
   kafka:
-    topics:
-      delivery:
-        created: delivery.created
-      order:
+    order:
+      topics:
         completed: order.completed
 resilience4j:
   retry:

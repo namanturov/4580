@@ -4,13 +4,13 @@ import com.example.orderservice.dto.request.UpdateOrderRequest;
 import com.example.orderservice.entity.Order;
 import com.example.orderservice.entity.async.AsyncMessage;
 import com.example.orderservice.enums.OrderStatus;
-import com.example.orderservice.infrastructure.kafka.config.KafkaTopicsProperties;
-import com.example.orderservice.integration.delivery.kafka.dto.OrderCompletedEvent;
+import com.example.orderservice.integration.delivery.kafka.dto.request.OrderCompletedEvent;
 import com.example.orderservice.integration.payment.enums.CurrencyType;
 import com.example.orderservice.integration.payment.enums.PaymentStatus;
 import com.example.orderservice.integration.payment.feign.client.PaymentClient;
 import com.example.orderservice.integration.payment.feign.dto.request.CreatePaymentRequest;
 import com.example.orderservice.integration.payment.rabbitmq.producer.PaymentProducer;
+import com.example.orderservice.integration.properties.OrderKafkaProperties;
 import com.example.orderservice.repository.manager.OrderManager;
 import com.example.orderservice.service.AsyncMessageService;
 import com.example.orderservice.service.OrderService;
@@ -32,7 +32,7 @@ import java.util.UUID;
 public class OrderServiceImpl implements OrderService {
 
     AsyncMessageService asyncMessageService;
-    KafkaTopicsProperties kafkaTopicsProps;
+    OrderKafkaProperties orderKafkaProps;
     PaymentProducer paymentProducer;
     PaymentClient paymentClient;
     OrderManager orderManager;
@@ -99,7 +99,7 @@ public class OrderServiceImpl implements OrderService {
         var payload = jsonMapper.writeValueAsString(event);
 
         var asyncMessage = AsyncMessage.createOutboxMessage(
-                kafkaTopicsProps.order().completed(),
+                orderKafkaProps.topics().completed(),
                 payload);
 
         asyncMessageService.saveMessage(asyncMessage);

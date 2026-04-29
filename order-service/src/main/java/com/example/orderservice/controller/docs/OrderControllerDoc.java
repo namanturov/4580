@@ -1,6 +1,6 @@
 package com.example.orderservice.controller.docs;
 
-import com.example.orderservice.infrastructure.header.Headers;
+import com.example.orderservice.api.header.PaymentHttpHeader;
 import com.example.orderservice.dto.request.CreateOrderRequest;
 import com.example.orderservice.dto.request.UpdateOrderRequest;
 import com.example.orderservice.dto.response.OrderListResponse;
@@ -61,7 +61,7 @@ public interface OrderControllerDoc {
                             content = @Content(schema = @Schema(implementation = Response.class)))
             }
     )
-    void update(@RequestHeader(Headers.IDEMPOTENCY_KEY)
+    void update(@RequestHeader(PaymentHttpHeader.IDEMPOTENCY)
                 UUID idempotencyKey,
                 @Parameter(description = "ID заказа")
                 UUID id,
