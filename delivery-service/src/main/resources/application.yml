@@ -1,0 +1,56 @@
+server:
+  port: 8095
+spring:
+  application:
+    name: delivery-service
+  datasource:
+    url: jdbc:h2:mem:deliverydb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  h2:
+    console:
+      enabled: true
+  kafka:
+    bootstrap-servers: localhost:9093
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    listener:
+      ack-mode: manual
+    consumer:
+      group-id: delivery-consumers
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+resilience4j:
+  circuitbreaker:
+    instances:
+      deliveryController:
+        register-health-indicator: true
+        sliding-window-size: 15
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 50
+        slow-call-duration-threshold: 5s
+        permitted-number-of-calls-in-half-open-state: 4
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state: 10s
+        ignore-exceptions:
+          - com.example.deliveryservice.exception.EntityNotFoundException
+integration:
+  kafka:
+    delivery:
+      topics:
+        created: delivery.created
+    order:
+      topics:
+        completed: order.completed

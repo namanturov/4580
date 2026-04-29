@@ -1,0 +1,56 @@
+server:
+  port: 8096
+spring:
+  application:
+    name: payment-service
+  datasource:
+    url: jdbc:h2:mem:paymentdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+  h2:
+    console:
+      enabled: true
+  rabbitmq:
+    username: namanturov
+    password: 4580
+    addresses: amqp://localhost:5673
+idempotency:
+  ttl: 24h
+resilience4j:
+  circuitbreaker:
+    instances:
+      paymentController:
+        register-health-indicator: true
+        sliding-window-size: 15
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 50
+        slow-call-duration-threshold: 5s
+        permitted-number-of-calls-in-half-open-state: 4
+        minimum-number-of-calls: 5
+        wait-duration-in-open-state: 10s
+rate:
+  limiter:
+    buckets:
+      capacity: 150
+    refill:
+      tokens: 10
+      period: 5s
+integration:
+  rabbitmq:
+    order:
+      exchange: payment-4580-exchange
+      payment-status:
+        routing-key: payment.status.updated
+        queue: payment-status-queue
+      create-payment:
+        queue: payment-create-queue
