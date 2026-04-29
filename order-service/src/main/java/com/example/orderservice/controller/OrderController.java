@@ -6,7 +6,6 @@ import com.example.orderservice.dto.request.CreateOrderRequest;
 import com.example.orderservice.dto.request.UpdateOrderRequest;
 import com.example.orderservice.dto.response.OrderListResponse;
 import com.example.orderservice.dto.response.OrderResponse;
-import com.example.orderservice.entity.Order;
 import com.example.orderservice.exception.ServiceUnavailableException;
 import com.example.orderservice.service.OrderService;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;

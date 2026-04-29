@@ -14,6 +14,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,9 +26,10 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class DeliveryServiceImpl implements DeliveryService {
 
-    KafkaTemplate<String, DeliveryCreatedEvent> kafkaTemplate;
+    KafkaTemplate<String, String> kafkaTemplate;
     DeliveryKafkaProperties deliveryKafkaProps;
     DeliveryManager deliveryManager;
+    JsonMapper jsonMapper;
 
     @Override
     public List<Delivery> getAllDeliveries() {
@@ -84,14 +86,15 @@ public class DeliveryServiceImpl implements DeliveryService {
     }
 
     private void publishDeliveryCreatedEvent(Delivery delivery) {
+        var event = DeliveryCreatedEvent.builder()
+                .deliveryId(delivery.getId())
+                .orderId(delivery.getOrderId())
+                .build();
+
         kafkaTemplate.send(
                 deliveryKafkaProps.topics().created(),
                 delivery.getId().toString(),
-                DeliveryCreatedEvent.builder()
-                        .deliveryId(delivery.getId())
-                        .orderId(delivery.getOrderId())
-                        .build()
-        );
+                jsonMapper.writeValueAsString(event));
 
         log.info("Отправлено событие создания доставки в Kafka. deliveryId={}", delivery.getId());
     }
