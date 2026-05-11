@@ -4,8 +4,8 @@ import com.example.deliveryservice.entity.Delivery;
 import com.example.deliveryservice.enums.DeliveryStatus;
 import com.example.deliveryservice.infrastructure.header.Headers;
 import com.example.deliveryservice.infrastructure.kafka.config.KafkaTopicsProperties;
-import com.example.deliveryservice.intergration.ordercreation.kafka.dto.OrderCreationStatusEvent;
-import com.example.deliveryservice.intergration.ordercreation.kafka.enums.OrderCreationStatus;
+import com.example.deliveryservice.intergration.ordercreation.dto.orchestrator.OrderCreationStatusEvent;
+import com.example.deliveryservice.intergration.ordercreation.dto.orchestrator.enums.OrderCreationStatus;
 import com.example.deliveryservice.repository.manager.DeliveryManager;
 import com.example.deliveryservice.service.DeliveryService;
 import lombok.AccessLevel;
@@ -66,20 +66,21 @@ public class DeliveryServiceImpl implements DeliveryService {
     }
 
     private void publishStatusEvent(Delivery delivery) {
-        UUID mockId = UUID.fromString("29970912-da34-47d6-964b-1fa113db45c5");
+//        UUID mockId = UUID.fromString("73cc9644-6c43-4f11-b745-a813eceb1911"); //для тестирования mock val
+        UUID notMockId = UUID.randomUUID();
         var event = OrderCreationStatusEvent.builder()
                 .deliveryId(delivery.getId())
                 .orderId(delivery.getOrderId())
-                .status(mockId.equals(delivery.getOrderId())
+                .status(notMockId.equals(delivery.getOrderId())
                         ? OrderCreationStatus.DELIVERY_FAILED
                         : OrderCreationStatus.DELIVERY_COMPLETED)
                 .build();
 
         Message<String> message = MessageBuilder
                 .withPayload(jsonMapper.writeValueAsString(event))
-                .setHeader(KafkaHeaders.TOPIC, kafkaTopicsProps.order().creationStatus())
+                .setHeader(KafkaHeaders.TOPIC, kafkaTopicsProps.saga().orderCreationStatus())
                 .setHeader(KafkaHeaders.KEY, delivery.getId().toString())
-                .setHeader(Headers.IDEMPOTENCY_KEY, mockId)//для тестирования mock val
+                .setHeader(Headers.IDEMPOTENCY_KEY, notMockId)
                 .build();
 
         kafkaTemplate.send(message);

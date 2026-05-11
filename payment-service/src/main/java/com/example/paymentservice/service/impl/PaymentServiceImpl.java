@@ -6,8 +6,8 @@ import com.example.paymentservice.enums.CurrencyType;
 import com.example.paymentservice.enums.PaymentStatus;
 import com.example.paymentservice.infrastructure.header.Headers;
 import com.example.paymentservice.infrastructure.kafka.config.props.KafkaTopicsProperties;
-import com.example.paymentservice.integration.ordercreation.kafka.dto.OrderCreationStatusEvent;
-import com.example.paymentservice.integration.ordercreation.kafka.enums.OrderCreationStatus;
+import com.example.paymentservice.integration.ordercreation.dto.orchestrator.OrderCreationStatusEvent;
+import com.example.paymentservice.integration.ordercreation.dto.orchestrator.enums.OrderCreationStatus;
 import com.example.paymentservice.repository.manager.PaymentManager;
 import com.example.paymentservice.service.PaymentService;
 import lombok.AccessLevel;
@@ -50,19 +50,20 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private void publishStatusEvent(UUID orderId) {
-        UUID mockId = UUID.fromString("1bd03235-fd26-4513-9ee6-5c2ed5f34932");
+//        UUID mockId = UUID.fromString("ec1f3f02-71c2-42f8-acb8-622508393322"); //для тестирования mock val
+        UUID notMockId = UUID.randomUUID();
         var event = OrderCreationStatusEvent.builder()
                 .orderId(orderId)
-                .status(mockId.equals(orderId)
+                .status(notMockId.equals(orderId)
                         ? OrderCreationStatus.PAYMENT_FAILED
                         : OrderCreationStatus.PAYMENT_CONFIRMED)
                 .build();
 
         Message<String> message = MessageBuilder
                 .withPayload(jsonMapper.writeValueAsString(event))
-                .setHeader(KafkaHeaders.TOPIC, kafkaTopicsProps.order().creationStatus())
+                .setHeader(KafkaHeaders.TOPIC, kafkaTopicsProps.saga().orderCreationStatus())
                 .setHeader(KafkaHeaders.KEY, orderId.toString())
-                .setHeader(Headers.IDEMPOTENCY_KEY, mockId)//для тестирования mock val
+                .setHeader(Headers.IDEMPOTENCY_KEY, notMockId)
                 .build();
 
         kafkaTemplate.send(message);
@@ -79,7 +80,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public void deletePayment(UUID orderId) {
+    public void refundPayment(UUID orderId) {
         var payment = paymentManager.getByOrderId(orderId);
 
         paymentManager.delete(payment);

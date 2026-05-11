@@ -14,5 +14,5 @@ public interface PaymentService {
 
     Payment getPaymentById(UUID id);
 
-    void deletePayment(UUID id);
+    void refundPayment(UUID id);
 }

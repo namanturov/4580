@@ -56,5 +56,8 @@ rate:
 integration:
   kafka:
     topics:
-      order:
-        creation-status: order.creation.status
+      saga:
+        order-creation-status: order.creation.status.event
+      payment:
+        create: payment.create.command
+        refund: payment.refund.command

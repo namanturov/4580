@@ -39,8 +39,16 @@ spring:
 integration:
   kafka:
     topics:
+      saga:
+        order-creation-status: order.creation.status.event
       order:
-        creation-status: order.creation.status
+        approve: order.approve.command
+        cancel: order.cancel.command
+      payment:
+        create: payment.create.command
+        refund: payment.refund.command
+      delivery:
+        create: delivery.create.command
 resilience4j:
   retry:
     instances:

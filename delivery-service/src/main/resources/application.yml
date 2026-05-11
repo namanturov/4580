@@ -48,5 +48,7 @@ resilience4j:
 integration:
   kafka:
     topics:
-      order:
-        creation-status: order.creation.status
+      saga:
+        order-creation-status: order.creation.status.event
+      delivery:
+        create: delivery.create.command

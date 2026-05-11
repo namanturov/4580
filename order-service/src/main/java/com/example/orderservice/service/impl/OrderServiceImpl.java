@@ -4,8 +4,9 @@ import com.example.orderservice.entity.Order;
 import com.example.orderservice.entity.async.AsyncMessage;
 import com.example.orderservice.enums.OrderStatus;
 import com.example.orderservice.infrastructure.kafka.config.KafkaTopicsProperties;
-import com.example.orderservice.integration.ordercreation.kafka.dto.OrderCreationStatusEvent;
 import com.example.orderservice.repository.manager.OrderManager;
+import com.example.orderservice.saga.dto.orchestrator.OrderCreationStatusEvent;
+import com.example.orderservice.saga.dto.orchestrator.enums.OrderCreationStatus;
 import com.example.orderservice.service.AsyncMessageService;
 import com.example.orderservice.service.OrderService;
 import lombok.AccessLevel;
@@ -35,7 +36,10 @@ public class OrderServiceImpl implements OrderService {
                 .setCustomerName(customerName)
                 .setStatus(OrderStatus.CREATED);
         var createdOrder = orderManager.save(order);
-        var event = OrderCreationStatusEvent.forOrderCreated(createdOrder.getId());
+        var event = OrderCreationStatusEvent.builder()
+                .orderId(createdOrder.getId())
+                .status(OrderCreationStatus.ORDER_CREATED)
+                .build();
         saveEventInOutbox(event);
     }
 
@@ -62,19 +66,17 @@ public class OrderServiceImpl implements OrderService {
         var order = orderManager.getById(orderId);
         order.setStatus(OrderStatus.FAILED);
         orderManager.save(order);
-        var event = OrderCreationStatusEvent.forCancel(orderId);
-        saveEventInOutbox(event);
     }
 
     private void saveEventInOutbox(OrderCreationStatusEvent event) {
         var payload = jsonMapper.writeValueAsString(event);
 
         var asyncMessage = AsyncMessage.createOutboxMessage(
-                kafkaTopicsProps.order().creationStatus(),
+                kafkaTopicsProps.saga().orderCreationStatus(),
                 payload);
 
         asyncMessageService.saveMessage(asyncMessage);
-        log.info("Создано и сохранено outbox-сообщение OrderCompleted. orderId={}, topic={}",
+        log.info("Создано и сохранено outbox-сообщение saga-order-creation orchestrator. orderId={}, topic={}",
                 event.orderId(),
                 asyncMessage.getMessageId().getTopic());
     }
