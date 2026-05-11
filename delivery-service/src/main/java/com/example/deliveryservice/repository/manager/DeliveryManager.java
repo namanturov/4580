@@ -44,4 +44,13 @@ public class DeliveryManager {
     public void delete(Delivery delivery) {
         deliveryRepository.delete(delivery);
     }
+
+    public Delivery getByOrderId(UUID orderId) {
+        return deliveryRepository.findByOrderId(orderId)
+                .orElseThrow(() -> {
+                    var errorMessage = String.format("данная доставка не была найдена по order-id - %s", orderId);
+                    log.error(errorMessage);
+                    return new EntityNotFoundException(errorMessage);
+                });
+    }
 }

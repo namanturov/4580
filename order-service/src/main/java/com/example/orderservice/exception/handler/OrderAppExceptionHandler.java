@@ -1,6 +1,5 @@
 package com.example.orderservice.exception.handler;
 
-import com.example.orderservice.dto.response.Response;
 import com.example.orderservice.exception.*;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -16,37 +15,37 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class OrderAppExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<Response> handleEntityNotFoundException(EntityNotFoundException e) {
+    public ResponseEntity<String> handleEntityNotFoundException(EntityNotFoundException e) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
-                .body(Response.of(e.getMessage()));
+                .body(e.getMessage());
     }
 
     @ExceptionHandler(ExternalIntegrationServiceException.class)
-    public ResponseEntity<Response> handleExternalIntegrationServiceException(ExternalIntegrationServiceException e) {
+    public ResponseEntity<String> handleExternalIntegrationServiceException(ExternalIntegrationServiceException e) {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Response.of("ой, что-то пошло не так. Уже чиним, братан 😓."));
+                .body("ой, что-то пошло не так. Уже чиним, братан 😓.");
     }
 
     @ExceptionHandler(ServiceUnavailableException.class)
-    public ResponseEntity<Response> handleServiceUnavailableException(ServiceUnavailableException e) {
+    public ResponseEntity<String> handleServiceUnavailableException(ServiceUnavailableException e) {
         return ResponseEntity
                 .status(HttpStatus.SERVICE_UNAVAILABLE)
-                .body(Response.of(e.getMessage()));
+                .body(e.getMessage());
     }
 
     @ExceptionHandler(TooManyConcurrentRequestsException.class)
-    public ResponseEntity<Response> handleTooManyConcurrentRequestsException(TooManyConcurrentRequestsException e) {
+    public ResponseEntity<String> handleTooManyConcurrentRequestsException(TooManyConcurrentRequestsException e) {
         return ResponseEntity
                 .status(HttpStatus.TOO_MANY_REQUESTS)
-                .body(Response.of(e.getMessage()));
+                .body(e.getMessage());
     }
 
     @ExceptionHandler(RateLimitExceededException.class)
-    public ResponseEntity<Response> handleRateLimitExceededException(RateLimitExceededException e) {
+    public ResponseEntity<String> handleRateLimitExceededException(RateLimitExceededException e) {
         return ResponseEntity
                 .status(HttpStatus.TOO_MANY_REQUESTS)
-                .body(Response.of(e.getMessage()));
+                .body(e.getMessage());
     }
 }

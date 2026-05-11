@@ -4,8 +4,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "integration.kafka.topics")
 public record KafkaTopicsProperties(
-        DeliveryTopics delivery
+        OrderTopics order
 ) {
-    public record DeliveryTopics(String created) {
+    public record OrderTopics(String creationStatus) {
     }
 }

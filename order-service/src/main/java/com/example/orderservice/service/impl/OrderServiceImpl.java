@@ -1,16 +1,10 @@
 package com.example.orderservice.service.impl;
 
-import com.example.orderservice.dto.request.UpdateOrderRequest;
 import com.example.orderservice.entity.Order;
 import com.example.orderservice.entity.async.AsyncMessage;
 import com.example.orderservice.enums.OrderStatus;
 import com.example.orderservice.infrastructure.kafka.config.KafkaTopicsProperties;
-import com.example.orderservice.integration.delivery.kafka.dto.OrderCompletedEvent;
-import com.example.orderservice.integration.payment.enums.CurrencyType;
-import com.example.orderservice.integration.payment.enums.PaymentStatus;
-import com.example.orderservice.integration.payment.feign.client.PaymentClient;
-import com.example.orderservice.integration.payment.feign.dto.request.CreatePaymentRequest;
-import com.example.orderservice.integration.payment.rabbitmq.producer.PaymentProducer;
+import com.example.orderservice.integration.ordercreation.kafka.dto.OrderCreationStatusEvent;
 import com.example.orderservice.repository.manager.OrderManager;
 import com.example.orderservice.service.AsyncMessageService;
 import com.example.orderservice.service.OrderService;
@@ -21,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.json.JsonMapper;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -33,8 +26,6 @@ public class OrderServiceImpl implements OrderService {
 
     AsyncMessageService asyncMessageService;
     KafkaTopicsProperties kafkaTopicsProps;
-    PaymentProducer paymentProducer;
-    PaymentClient paymentClient;
     OrderManager orderManager;
     JsonMapper jsonMapper;
 
@@ -44,7 +35,8 @@ public class OrderServiceImpl implements OrderService {
                 .setCustomerName(customerName)
                 .setStatus(OrderStatus.CREATED);
         var createdOrder = orderManager.save(order);
-        paymentProducer.sendCreatePayment(createdOrder);
+        var event = OrderCreationStatusEvent.forOrderCreated(createdOrder.getId());
+        saveEventInOutbox(event);
     }
 
     @Override
@@ -58,60 +50,32 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void updateOrder(UUID id, UpdateOrderRequest request, UUID idempotencyKey) {
-        var existOrder = orderManager.getById(id);
-        var status = request.getStatus();
-        existOrder.setPrevStatus(existOrder.getStatus())
-                .setStatus(request.getStatus())
-                .setCustomerName(request.getCustomerName());
-        if (status == OrderStatus.SUCCESS
-                || (status == OrderStatus.FAILED && existOrder.getPrevStatus() == OrderStatus.SUCCESS)) {
-            BigDecimal fixedOrderPrice = BigDecimal.valueOf(4580.02);
-            var createPaymentReq = CreatePaymentRequest.of(id, fixedOrderPrice, CurrencyType.KGS);
-            paymentClient.create(idempotencyKey, createPaymentReq);
-        }
+    public void updateOrderStatus(UUID orderId, OrderStatus status) {
+        var order = orderManager.getById(orderId);
+        order.setPrevStatus(order.getStatus());
+        order.setStatus(status);
+        orderManager.save(order);
     }
 
     @Override
-    public void updateOrderStatus(UUID orderId, PaymentStatus paymentStatus) {
+    public void cancelOrder(UUID orderId) {
         var order = orderManager.getById(orderId);
-        switch (paymentStatus) {
-            case ERROR -> {
-                order.setPrevStatus(order.getStatus());
-                order.setStatus(OrderStatus.FAILED);
-            }
-            case PAID -> {
-                order.setPrevStatus(order.getStatus());
-                order.setStatus(OrderStatus.SUCCESS);
-            }
-            default -> log.error("Шо то не так начала передавать статусы платежей. Нужно поговорить с ними");
-        }
+        order.setStatus(OrderStatus.FAILED);
         orderManager.save(order);
-        log.info("заказ был зафинален по статусу поговорив с платежным ордером");
-        createAndSaveOrderCompletedEvent(order);
+        var event = OrderCreationStatusEvent.forCancel(orderId);
+        saveEventInOutbox(event);
     }
 
-    private void createAndSaveOrderCompletedEvent(Order order) {
-        var event = OrderCompletedEvent.builder()
-                .orderId(order.getId())
-                .build();
-
+    private void saveEventInOutbox(OrderCreationStatusEvent event) {
         var payload = jsonMapper.writeValueAsString(event);
 
         var asyncMessage = AsyncMessage.createOutboxMessage(
-                kafkaTopicsProps.order().completed(),
+                kafkaTopicsProps.order().creationStatus(),
                 payload);
 
         asyncMessageService.saveMessage(asyncMessage);
         log.info("Создано и сохранено outbox-сообщение OrderCompleted. orderId={}, topic={}",
-                order.getId(),
+                event.orderId(),
                 asyncMessage.getMessageId().getTopic());
-    }
-
-    @Override
-    public void deleteOrder(UUID id) {
-        var order = orderManager.getById(id);
-
-        orderManager.delete(order);
     }
 }

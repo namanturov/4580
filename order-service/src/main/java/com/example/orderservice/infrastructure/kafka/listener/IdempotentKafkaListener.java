@@ -13,7 +13,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.kafka.support.Acknowledgment;
 import tools.jackson.databind.json.JsonMapper;
 
-import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 @Slf4j
@@ -27,6 +26,7 @@ public abstract class IdempotentKafkaListener<T> {
     public void consume(ConsumerRecord<String, String> consumerRecord,
                         String message,
                         Acknowledgment ack) {
+        log.info("Получено событие. payload={}", message);
         Header idemKeyHeader = consumerRecord.headers().lastHeader(Headers.IDEMPOTENCY_KEY);
         if (idemKeyHeader == null) {
             log.error("Отсутствует idempotency key в заголовках сообщения. topic={}, partition={}, offset={}",
@@ -38,7 +38,7 @@ public abstract class IdempotentKafkaListener<T> {
             return;
         }
 
-        var idempotentKey = new String(idemKeyHeader.value(), StandardCharsets.UTF_8);
+        var idempotentKey = jsonMapper.readValue(idemKeyHeader.value(), String.class);
         if (!isValidUUID(idempotentKey)) {
             log.error("Некорректный формат idempotency key: {}. topic={}, partition={}, offset={}",
                     idempotentKey,

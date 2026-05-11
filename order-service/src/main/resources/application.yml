@@ -16,7 +16,6 @@ spring:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: update
-    show-sql: true
     properties:
       hibernate:
         format_sql: true
@@ -24,10 +23,6 @@ spring:
   h2:
     console:
       enabled: true
-  rabbitmq:
-    username: namanturov
-    password: 4580
-    addresses: amqp://localhost:5673
   kafka:
     bootstrap-servers: localhost:9093
     producer:
@@ -42,23 +37,10 @@ spring:
       auto-offset-reset: earliest
       enable-auto-commit: false
 integration:
-  client:
-    payment:
-      url: http://localhost:8096/payments
-  rabbitmq:
-    payment:
-      exchange: payment-4580-exchange
-      create-payment:
-        routing-key: payment.create
-        queue: payment-create-queue
-      payment-status:
-        queue: payment-status-queue
   kafka:
     topics:
-      delivery:
-        created: delivery.created
       order:
-        completed: order.completed
+        creation-status: order.creation.status
 resilience4j:
   retry:
     instances:

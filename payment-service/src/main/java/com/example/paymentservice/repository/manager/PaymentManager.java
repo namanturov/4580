@@ -23,8 +23,8 @@ public class PaymentManager {
     PaymentRepository paymentRepository;
 
     @Transactional
-    public Payment save(Payment payment) {
-        return paymentRepository.save(payment);
+    public void save(Payment payment) {
+        paymentRepository.save(payment);
     }
 
     public List<Payment> getAll() {
@@ -43,5 +43,14 @@ public class PaymentManager {
     @Transactional
     public void delete(Payment payment) {
         paymentRepository.delete(payment);
+    }
+
+    public Payment getByOrderId(UUID orderId) {
+        return paymentRepository.findByOrderId(orderId)
+                .orElseThrow(() -> {
+                    var errorMessage = String.format("данный платеж не был найден по order-id - %s", orderId);
+                    log.error(errorMessage);
+                    return new EntityNotFoundException(errorMessage);
+                });
     }
 }

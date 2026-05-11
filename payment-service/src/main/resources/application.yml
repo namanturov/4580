@@ -12,7 +12,6 @@ spring:
     database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: update
-    show-sql: true
     properties:
       hibernate:
         format_sql: true
@@ -20,10 +19,19 @@ spring:
   h2:
     console:
       enabled: true
-  rabbitmq:
-    username: namanturov
-    password: 4580
-    addresses: amqp://localhost:5673
+  kafka:
+    bootstrap-servers: localhost:9093
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+    listener:
+      ack-mode: manual
+    consumer:
+      group-id: payment-consumers
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      auto-offset-reset: earliest
+      enable-auto-commit: false
 idempotency:
   ttl: 24h
 resilience4j:
@@ -46,11 +54,7 @@ rate:
       tokens: 10
       period: 5s
 integration:
-  rabbitmq:
-    order:
-      exchange: payment-4580-exchange
-      payment-status:
-        routing-key: payment.status.updated
-        queue: payment-status-queue
-      create-payment:
-        queue: payment-create-queue
+  kafka:
+    topics:
+      order:
+        creation-status: order.creation.status

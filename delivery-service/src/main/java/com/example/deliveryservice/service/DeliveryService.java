@@ -1,6 +1,5 @@
 package com.example.deliveryservice.service;
 
-import com.example.deliveryservice.dto.request.UpdateDeliveryRequest;
 import com.example.deliveryservice.entity.Delivery;
 
 import java.util.List;
@@ -11,9 +10,7 @@ public interface DeliveryService {
 
     Delivery getDeliveryById(UUID id);
 
-    void updateDelivery(UUID id, UpdateDeliveryRequest request);
+    void deleteDelivery(UUID orderId);
 
-    void deleteDelivery(UUID id);
-
-    Delivery createDelivery(UUID orderId);
+    void createDelivery(UUID orderId);
 }

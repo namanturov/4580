@@ -1,4 +1,4 @@
-package com.example.orderservice.infrastructure.kafka.config;
+package com.example.paymentservice.infrastructure.kafka.config.props;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

@@ -1,12 +1,11 @@
 package com.example.deliveryservice.service.impl;
 
-import com.example.deliveryservice.dto.request.UpdateDeliveryRequest;
-import com.example.deliveryservice.entity.Address;
 import com.example.deliveryservice.entity.Delivery;
 import com.example.deliveryservice.enums.DeliveryStatus;
 import com.example.deliveryservice.infrastructure.header.Headers;
 import com.example.deliveryservice.infrastructure.kafka.config.KafkaTopicsProperties;
-import com.example.deliveryservice.intergration.order.kafka.dto.DeliveryCreatedEvent;
+import com.example.deliveryservice.intergration.ordercreation.kafka.dto.OrderCreationStatusEvent;
+import com.example.deliveryservice.intergration.ordercreation.kafka.enums.OrderCreationStatus;
 import com.example.deliveryservice.repository.manager.DeliveryManager;
 import com.example.deliveryservice.service.DeliveryService;
 import lombok.AccessLevel;
@@ -46,35 +45,14 @@ public class DeliveryServiceImpl implements DeliveryService {
     }
 
     @Override
-    public void updateDelivery(UUID id, UpdateDeliveryRequest request) {
-        var delivery = deliveryManager.getById(id);
-        assignDeliveryEntityFull(delivery, request);
-
-        deliveryManager.save(delivery);
-    }
-
-    private void assignDeliveryEntityFull(Delivery delivery, UpdateDeliveryRequest request) {
-        delivery.setStatus(request.getStatus())
-                .setOrderId(request.getOrderId());
-
-        if (request.getAddress() != null) {
-            var updateAddress = request.getAddress();
-            delivery.setAddress(new Address()
-                    .setCity(updateAddress.getCity())
-                    .setStreet(updateAddress.getStreet())
-                    .setHouse(updateAddress.getHouse()));
-        }
-    }
-
-    @Override
-    public void deleteDelivery(UUID id) {
-        var delivery = deliveryManager.getById(id);
+    public void deleteDelivery(UUID orderId) {
+        var delivery = deliveryManager.getByOrderId(orderId);
 
         deliveryManager.delete(delivery);
     }
 
     @Override
-    public Delivery createDelivery(UUID orderId) {
+    public void createDelivery(UUID orderId) {
         log.info("Начало создания доставки по заказу: {}", orderId);
 
         var delivery = new Delivery()
@@ -84,22 +62,24 @@ public class DeliveryServiceImpl implements DeliveryService {
 
         log.info("Доставка создана. ID доставки: {}", savedDelivery.getId());
 
-        publishDeliveryCreatedEvent(savedDelivery);
-
-        return savedDelivery;
+        publishStatusEvent(savedDelivery);
     }
 
-    private void publishDeliveryCreatedEvent(Delivery delivery) {
-        var event = DeliveryCreatedEvent.builder()
+    private void publishStatusEvent(Delivery delivery) {
+        UUID mockId = UUID.fromString("29970912-da34-47d6-964b-1fa113db45c5");
+        var event = OrderCreationStatusEvent.builder()
                 .deliveryId(delivery.getId())
                 .orderId(delivery.getOrderId())
+                .status(mockId.equals(delivery.getOrderId())
+                        ? OrderCreationStatus.DELIVERY_FAILED
+                        : OrderCreationStatus.DELIVERY_COMPLETED)
                 .build();
 
         Message<String> message = MessageBuilder
                 .withPayload(jsonMapper.writeValueAsString(event))
-                .setHeader(KafkaHeaders.TOPIC, kafkaTopicsProps.delivery().created())
+                .setHeader(KafkaHeaders.TOPIC, kafkaTopicsProps.order().creationStatus())
                 .setHeader(KafkaHeaders.KEY, delivery.getId().toString())
-                .setHeader(Headers.IDEMPOTENCY_KEY, "11111111-4580-4580-4580-111111111111".getBytes())//для тестирования mock val
+                .setHeader(Headers.IDEMPOTENCY_KEY, mockId)//для тестирования mock val
                 .build();
 
         kafkaTemplate.send(message);
