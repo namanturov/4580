@@ -4,8 +4,9 @@ import com.example.deliveryservice.dto.request.UpdateDeliveryRequest;
 import com.example.deliveryservice.entity.Address;
 import com.example.deliveryservice.entity.Delivery;
 import com.example.deliveryservice.enums.DeliveryStatus;
-import com.example.deliveryservice.intergration.order.kafka.dto.response.DeliveryCreatedEvent;
-import com.example.deliveryservice.intergration.properties.DeliveryKafkaProperties;
+import com.example.deliveryservice.infrastructure.header.Headers;
+import com.example.deliveryservice.infrastructure.kafka.config.KafkaTopicsProperties;
+import com.example.deliveryservice.intergration.order.kafka.dto.DeliveryCreatedEvent;
 import com.example.deliveryservice.repository.manager.DeliveryManager;
 import com.example.deliveryservice.service.DeliveryService;
 import lombok.AccessLevel;
@@ -13,7 +14,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,9 +30,10 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class DeliveryServiceImpl implements DeliveryService {
 
-    KafkaTemplate<String, DeliveryCreatedEvent> kafkaTemplate;
-    DeliveryKafkaProperties deliveryKafkaProps;
+    KafkaTemplate<String, String> kafkaTemplate;
+    KafkaTopicsProperties kafkaTopicsProps;
     DeliveryManager deliveryManager;
+    JsonMapper jsonMapper;
 
     @Override
     public List<Delivery> getAllDeliveries() {
@@ -84,14 +90,19 @@ public class DeliveryServiceImpl implements DeliveryService {
     }
 
     private void publishDeliveryCreatedEvent(Delivery delivery) {
-        kafkaTemplate.send(
-                deliveryKafkaProps.topics().created(),
-                delivery.getId().toString(),
-                DeliveryCreatedEvent.builder()
-                        .deliveryId(delivery.getId())
-                        .orderId(delivery.getOrderId())
-                        .build()
-        );
+        var event = DeliveryCreatedEvent.builder()
+                .deliveryId(delivery.getId())
+                .orderId(delivery.getOrderId())
+                .build();
+
+        Message<String> message = MessageBuilder
+                .withPayload(jsonMapper.writeValueAsString(event))
+                .setHeader(KafkaHeaders.TOPIC, kafkaTopicsProps.delivery().created())
+                .setHeader(KafkaHeaders.KEY, delivery.getId().toString())
+                .setHeader(Headers.IDEMPOTENCY_KEY, "11111111-4580-4580-4580-111111111111".getBytes())//для тестирования mock val
+                .build();
+
+        kafkaTemplate.send(message);
 
         log.info("Отправлено событие создания доставки в Kafka. deliveryId={}", delivery.getId());
     }

@@ -1,4 +1,4 @@
-package com.example.deliveryservice.intergration.order.kafka.dto.request;
+package com.example.deliveryservice.intergration.order.kafka.dto;
 
 import java.util.UUID;
 
